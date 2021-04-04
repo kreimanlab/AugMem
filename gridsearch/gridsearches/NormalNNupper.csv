@@ -1,0 +1,7 @@
+,offline,scenario,n_runs,model_type,model_name,agent_type,agent_name,optimizer,batch_size,lr,momentum,weight_decay,pretrained,freeze_feature_extract,n_epoch,reg_coef,memory_size,dataroot,filelist_root,dataset,output_dir,n_workers,gpuid
+0,True,class_iid,2,resnet,ResNet18,default,NormalNN,SGD,20,0.001,0.9,0.0001,True,False,10,1.0,15,/media/data/morgan_data/toybox/images,dataloaders,toybox,toybox_gridsearch_outputs,20,3
+1,True,class_iid,2,resnet,ResNet18,default,NormalNN,SGD,20,0.0001,0.9,0.0001,True,False,10,1.0,15,/media/data/morgan_data/toybox/images,dataloaders,toybox,toybox_gridsearch_outputs,20,3
+2,True,class_iid,2,resnet,ResNet18,default,NormalNN,SGD,20,1e-05,0.9,0.0001,True,False,10,1.0,15,/media/data/morgan_data/toybox/images,dataloaders,toybox,toybox_gridsearch_outputs,20,3
+3,True,class_instance,2,resnet,ResNet18,default,NormalNN,SGD,20,0.001,0.9,0.0001,True,False,10,1.0,15,/media/data/morgan_data/toybox/images,dataloaders,toybox,toybox_gridsearch_outputs,20,3
+4,True,class_instance,2,resnet,ResNet18,default,NormalNN,SGD,20,0.0001,0.9,0.0001,True,False,10,1.0,15,/media/data/morgan_data/toybox/images,dataloaders,toybox,toybox_gridsearch_outputs,20,3
+5,True,class_instance,2,resnet,ResNet18,default,NormalNN,SGD,20,1e-05,0.9,0.0001,True,False,10,1.0,15,/media/data/morgan_data/toybox/images,dataloaders,toybox,toybox_gridsearch_outputs,20,3

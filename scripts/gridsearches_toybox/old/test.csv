@@ -1,0 +1,9 @@
+,offline,scenario,n_runs,model_type,model_name,agent_type,agent_name,optimizer,batch_size,lr,momentum,weight_decay,pretrained,freeze_feature_extract,n_epoch,reg_coef,memory_size,dataroot,filelist_root,output_dir,n_workers,gpuid
+0,False,iid,1,resnet,ResNet18,default,NormalNN,SGD,100,0.001,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,0
+1,False,iid,1,resnet,ResNet18,default,NormalNN,SGD,100,0.01,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,1
+2,False,instance,1,resnet,ResNet18,default,NormalNN,SGD,100,0.001,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,2
+3,False,instance,1,resnet,ResNet18,default,NormalNN,SGD,100,0.01,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,3
+4,False,class_iid,1,resnet,ResNet18,default,NormalNN,SGD,100,0.001,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,0
+5,False,class_iid,1,resnet,ResNet18,default,NormalNN,SGD,100,0.01,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,1
+6,False,class_instance,1,resnet,ResNet18,default,NormalNN,SGD,100,0.001,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,2
+7,False,class_instance,1,resnet,ResNet18,default,NormalNN,SGD,100,0.01,0,0,False,False,1,1,1200,data/core50,dataloaders,outputs,30,3
