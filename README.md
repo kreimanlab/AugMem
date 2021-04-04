@@ -7,7 +7,7 @@ Stream learning refers to the ability to acquire and transfer knowledge across a
 
 ## Setup
 
-This project was developed and tested using Ubuntu version 20.04, CUDA 10.1, and Python version 3.6. See ```requirements.txt``` for package versions. Additional requirements: ffmpeg
+This PYTORCH project was developed and tested using Ubuntu version 20.04, CUDA 10.1, and Python version 3.6. See ```requirements.txt``` for package versions. Additional requirements: ffmpeg
 
 Refer to [link](https://www.anaconda.com/distribution/) for Anaconda installation. Alternatively, execute the following command:
 ```
@@ -66,7 +66,7 @@ This project uses three datasets. Each dataset has its own procedure for pre-pro
 7. From the root project directory, run "sh scripts/setup_tasks_ilab2mlight.sh". This should only take a few minutes. You should now see a new folder in the "dataloaders" directory called "ilab2mlight_task_filelists"
 
 ## Running grid search for optimal hyperparameters for each algorithm
-Skip this step if you want to run the optimal set of hyperparameters for each algorithm in our dataset. We use grid search on toybox as an example. Run the following:
+Skip this step if you want to run the optimal set of hyperparameters for each algorithm in our datasets. We use grid search on toybox as an example. Run the following to perform grid search:
 ```
 cd gridsearch
 #dataset, GPU id 0, GPU id 1
@@ -77,7 +77,7 @@ cp -r gridsearches ../scripts/
 #resolve permission denied error when running generated shell scripts
 chmod -R +x ../scripts
 mv ../scripts/gridsearches ../scripts/gridsearches_toybox
-manually remove "--validate" from iCARL
+#manually remove "--validate" from iCARL
 ./scripts/combined_gridsearch_toybox.sh
 ./scripts/combined_gridsearch_toybox_gpu2.sh
 ./toybox_setup_grid_raw.sh toybox 1 3
@@ -93,14 +93,15 @@ mv ../scripts/gridsearches ../scripts/gridsearches_toybox
 All grid search results will be in the form of ```test.csv``` and be stored in ```toybox_gridsearch_outputs``` folder. One can use ```summarize_gridsearch.py``` to plot the optimal set of hyperparameters for each algorithm.
 
 ## Running algorithms
-Make sure that you are the root of the repository. Run the following to train and save results of individual algorithm on CoRE50 dataset:
+Make sure that one is at the root of the repository. Run the following to train and save results of individual algorithm on CoRE50 dataset:
 ```
 ./scripts/optimal_core50/AugMem.sh core50 0
 ```
-***NOTE*** set ```DATAROOT``` in each shell script to the directory where the dataset is downloaded and stored.
+***NOTE*** Set ```DATAROOT``` in each shell script to the directory where the dataset is downloaded and stored.
 Each shell script is an algorithm. It takes two input arguements: 
  - the dataset names: core50, toybox, ilab2mlight
  - the GPU ID to run the jobs: e.g. 0
+ 
 If one wants to run all algorithms at once for a particular dataset:
 ```
 ./scripts/combined_optimal_core50.sh
