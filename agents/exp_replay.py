@@ -180,33 +180,39 @@ class GEM(NormalNN):
         # update model as normal
         super(GEM, self).learn_stream(train_loader)
 
-        self.task_memory[self.task_count] = train_loader.dataset
+        self.task_memory[self.task_count] = train_loader
         self.task_count += 1
 
         # Cache the data for faster processing
-        for t, mem in self.task_memory.items():
-            # concatentate all the data in each task
-            mem_loader = data.DataLoader(mem,
-                                         batch_size = len(mem),
-                                         shuffle=False,
-                                         num_workers=self.config['n_workers'],
-                                         pin_memory=True)
-            assert len(mem_loader)==1, 'The length of mem_loader should be 1'
-            for i, (mem_input, mem_target) in enumerate(mem_loader):
-                if self.gpu:
-                    mem_input = mem_input.cuda()
-                    mem_target = mem_target.cuda()
-            self.task_mem_cache[t] = {'data':mem_input,'target':mem_target,'task':t}
+        # for t, mem in self.task_memory.items():
+        #     # concatentate all the data in each task
+        #     mem_loader = data.DataLoader(mem,
+        #                                  batch_size = self.config['batch_size'],
+        #                                  shuffle=False,
+        #                                  num_workers=self.config['n_workers'],
+        #                                  pin_memory=True)
+        #     assert len(mem_loader)==1, 'The length of mem_loader should be 1'
+        #     for i, (mem_input, mem_target) in enumerate(mem_loader):
+        #         if self.gpu:
+        #             mem_input = mem_input.cuda()
+        #             mem_target = mem_target.cuda()
+        #     self.task_mem_cache[t] = {'data':mem_input,'target':mem_target,'task':t}
+        #     self.task_mem_cache[t] = {'dataloader':mem_loader}
 
     def update_model(self, out, targets):
 
         # compute gradients on previous tasks
         if self.task_count > 0:
-            for t, mem in self.task_memory.items():
+            for t, mem_loader in self.task_memory.items():
                 self.zero_grad()
-                # feed the data from memory and collect the gradients
-                mem_out = self.forward(self.task_mem_cache[t]['data'])
-                mem_loss = self.criterion(mem_out, self.task_mem_cache['target'])
+                mem_loss = 0
+                for i, (mem_input, mem_target) in enumerate(mem_loader):
+                    if self.gpu:
+                        mem_input = mem_input.cuda()
+                        mem_target = mem_target.cuda()
+                        mem_out = self.forward(mem_input)
+                        batch_loss = self.criterion(mem_out, mem_target)
+                        mem_loss += batch_loss
                 mem_loss.backward()
                 # store the gradients
                 self.task_grads[t] = self.grad_to_vector()
