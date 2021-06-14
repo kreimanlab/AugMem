@@ -113,7 +113,6 @@ class GEM(NormalNN):
         self.task_grads = {}
         self.quadprog = import_module('quadprog')
         self.task_mem_cache = {}
-        print(self.config)
 
     # storing all the gradients in a vector
     def grad_to_vector(self):
@@ -154,7 +153,7 @@ class GEM(NormalNN):
 
             Modified from: https://github.com/facebookresearch/GradientEpisodicMemory/blob/master/model/gem.py#L70
         """
-        # get te margin
+        # get the margin
         margin = self.config['reg_coef']
         # convert memories to numpy
         memories_np = memories.cpu().contiguous().double().numpy()
@@ -188,22 +187,6 @@ class GEM(NormalNN):
                                                              pin_memory=True)
         self.task_count += 1
 
-        # Cache the data for faster processing
-        # for t, mem in self.task_memory.items():
-        #     # concatentate all the data in each task
-        #     mem_loader = data.DataLoader(mem,
-        #                                  batch_size = self.config['batch_size'],
-        #                                  shuffle=False,
-        #                                  num_workers=self.config['n_workers'],
-        #                                  pin_memory=True)
-        #     assert len(mem_loader)==1, 'The length of mem_loader should be 1'
-        #     for i, (mem_input, mem_target) in enumerate(mem_loader):
-        #         if self.gpu:
-        #             mem_input = mem_input.cuda()
-        #             mem_target = mem_target.cuda()
-        #     self.task_mem_cache[t] = {'data':mem_input,'target':mem_target,'task':t}
-        #     self.task_mem_cache[t] = {'dataloader':mem_loader}
-
     def update_model(self, out, targets):
 
         # compute gradients on previous tasks
@@ -235,6 +218,123 @@ class GEM(NormalNN):
             dotp = dotp.sum(dim=1)
             if (dotp < 0).sum() != 0:
                 new_grad = self.project2cone2(current_grad_vec, mem_grad_vec)
+                # copy the gradients back
+                self.vector_to_grad(new_grad)
+
+        self.optimizer.step()
+        return loss.detach()
+
+
+class AGEM(NormalNN):
+    """
+    @inproceedings{GradientEpisodicMemory,
+        title={Gradient Episodic Memory for Continual Learning},
+        author={Lopez-Paz, David and Ranzato, Marc'Aurelio},
+        booktitle={NIPS},
+        year={2017},
+        url={https://arxiv.org/abs/1706.08840}
+    }
+    """
+    def __init__(self, agent_config):
+        super(AGEM, self).__init__(agent_config)
+        self.task_count = 0
+        self.memory_size = agent_config['memory_size']
+        self.task_memory = {}
+        self.params = {n: p for n, p in self.model.named_parameters() if p.requires_grad}  # For convenience
+        self.past_task_grads = None
+        self.memory_loader = None
+
+    # storing all the gradients in a vector
+    def grad_to_vector(self):
+        vec = []
+        for n, p in self.params.items():
+            # storing gradients for parameters that have gradients
+            if p.grad is not None:
+                vec.append(p.grad.view(-1))
+            # filling zeroes for network parameters that have no gradient
+            else:
+                vec.append(p.data.clone().fill_(0).view(-1))
+        return torch.cat(vec)
+
+    # overwritting gradients with gradients stored in vector
+    def vector_to_grad(self, vec):
+        # overwrite the current param.grad by slicing the values in vec
+        # flattening the gradient
+        pointer = 0
+        for n, p in self.params.items():
+            # the length of the parameters
+            num_param = p.numel()
+            if p.grad is not None:
+                # slice the vector, reshape it, and replace the old data of the grad
+                p.grad.copy_(vec[pointer:pointer + num_param].view_as(p))
+            # increment the pointer
+            pointer += num_param
+
+
+    def project_grad(self, gradient):
+        """
+        input:  gradient, p-vector
+        output: x, p-vector
+        """
+        scalar = ( (np.dot(gradient, self.past_task_grads))/(np.dot(self.past_task_grads, self.past_task_grads)) )
+        return gradient - scalar * self.past_task_grads
+
+
+    def learn_stream(self, train_loader):
+        # update model as normal
+        super(AGEM, self).learn_stream(train_loader)
+
+        # Randomly decide which images to keep in memory
+        self.task_count += 1
+        # (a) Decide the number of samples to be saved
+        num_sample_per_task = self.memory_size // self.task_count
+        num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
+        # (b) Remove examples from memory to reserve space for new examples from latest task
+        for storage in self.task_memory.values():
+            storage.reduce(num_sample_per_task)
+        # (c) Randomly choose some samples from the current task and save them to memory
+        randind = torch.randperm(len(train_loader.dataset))[:num_sample_per_task]
+        self.task_memory[self.task_count] = Storage(train_loader.dataset, randind)
+        # (d) Get dataloader containing samples from all tasks
+        # 1. Get the replay loader
+        replay_list = []
+        for storage in self.task_memory.values():
+            replay_list.append(storage)
+        replay_data = torch.utils.data.ConcatDataset(replay_list)
+        self.memory_loader = data.DataLoader(replay_data,
+                                             batch_size=(self.config['batch_size'] // 10) + 1,
+                                             num_workers=train_loader.num_workers,
+                                             pin_memory=True)
+
+    def update_model(self, out, targets):
+
+        # compute gradients on previous tasks
+        if self.task_count > 0:
+            self.zero_grad()
+            mem_loss = 0
+            for i, (mem_input, mem_target) in enumerate(self.memory_loader):
+                if self.gpu:
+                    mem_input = mem_input.cuda()
+                    mem_target = mem_target.cuda()
+                mem_out = self.forward(mem_input)
+                batch_loss = self.criterion(mem_out, mem_target)
+                mem_loss += batch_loss
+            mem_loss.backward()
+            # store the gradients
+            self.past_task_grads = self.grad_to_vector()
+
+        # now compute the grad on current batch
+        loss = self.criterion(out, targets)
+        self.optimizer.zero_grad()
+        loss.backward()
+
+        # check if gradient violates constraints
+        if self.task_count > 0:
+            current_grad_vec = self.grad_to_vector()
+            dotp = current_grad_vec * self.past_task_grads
+            dotp = dotp.sum(dim=1)
+            if (dotp < 0).sum() != 0:
+                new_grad = self.project_grad(current_grad_vec)
                 # copy the gradients back
                 self.vector_to_grad(new_grad)
 
