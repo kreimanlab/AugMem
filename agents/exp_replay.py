@@ -181,10 +181,10 @@ class GEM(NormalNN):
         super(GEM, self).learn_stream(train_loader)
 
         self.task_memory[self.task_count] = data.DataLoader(train_loader.dataset,
-                                         batch_size = self.config['batch_size'] / 10,
-                                         shuffle=False,
-                                         num_workers=self.config['n_workers'],
-                                         pin_memory=True)
+                                                             batch_size = self.config['batch_size'] // 10,
+                                                             shuffle=False,
+                                                             num_workers=self.config['n_workers'],
+                                                             pin_memory=True)
         self.task_count += 1
 
         # Cache the data for faster processing
