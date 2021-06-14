@@ -277,6 +277,7 @@ class AGEM(NormalNN):
         output: x, p-vector
         """
         scalar = ( (np.dot(gradient, self.past_task_grads))/(np.dot(self.past_task_grads, self.past_task_grads)) )
+        print('scalar', scalar)
         return gradient - scalar * self.past_task_grads
 
 
