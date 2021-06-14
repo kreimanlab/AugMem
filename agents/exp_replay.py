@@ -205,7 +205,7 @@ class GEM(NormalNN):
             for t, mem in self.task_memory.items():
                 self.zero_grad()
                 # feed the data from memory and collect the gradients
-                mem_out = self.forward(self.task_mem_catch[t]['data'])
+                mem_out = self.forward(self.task_mem_cache[t]['data'])
                 mem_loss = self.criterion(mem_out, self.task_mem_cache['target'])
                 mem_loss.backward()
                 # store the gradients
