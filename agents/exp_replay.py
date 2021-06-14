@@ -113,6 +113,7 @@ class GEM(NormalNN):
         self.task_grads = {}
         self.quadprog = import_module('quadprog')
         self.task_mem_cache = {}
+        print(self.config)
 
     # storing all the gradients in a vector
     def grad_to_vector(self):
@@ -181,7 +182,7 @@ class GEM(NormalNN):
         super(GEM, self).learn_stream(train_loader)
 
         self.task_memory[self.task_count] = data.DataLoader(train_loader.dataset,
-                                                             batch_size = self.config['batch_size'] // 10,
+                                                             batch_size=self.config['batch_size'] // 10,
                                                              shuffle=False,
                                                              num_workers=self.config['n_workers'],
                                                              pin_memory=True)
