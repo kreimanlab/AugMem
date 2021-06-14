@@ -332,6 +332,7 @@ class AGEM(NormalNN):
         if self.task_count > 0:
             current_grad_vec = self.grad_to_vector().cpu()
             if np.dot(current_grad_vec, self.past_task_grads) < 0:
+                print('Violated constraint!')
                 new_grad = self.project_grad(current_grad_vec)
                 # copy the gradients back
                 if self.gpu:
