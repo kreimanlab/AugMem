@@ -321,7 +321,7 @@ class AGEM(NormalNN):
                 mem_loss += batch_loss
             mem_loss.backward()
             # store the gradients
-            self.past_task_grads = self.grad_to_vector()
+            self.past_task_grads = self.grad_to_vector().cpu()
 
         # now compute the grad on current batch
         loss = self.criterion(out, targets)
@@ -330,11 +330,14 @@ class AGEM(NormalNN):
 
         # check if gradient violates constraints
         if self.task_count > 0:
-            current_grad_vec = self.grad_to_vector()
+            current_grad_vec = self.grad_to_vector().cpu()
             if np.dot(current_grad_vec, self.past_task_grads) < 0:
                 new_grad = self.project_grad(current_grad_vec)
                 # copy the gradients back
-                self.vector_to_grad(new_grad)
+                if self.gpu:
+                    self.vector_to_grad(new_grad.cuda())
+                else:
+                    self.vector_to_grad(new_grad)
 
         self.optimizer.step()
         return loss.detach()
