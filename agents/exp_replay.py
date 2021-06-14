@@ -180,7 +180,11 @@ class GEM(NormalNN):
         # update model as normal
         super(GEM, self).learn_stream(train_loader)
 
-        self.task_memory[self.task_count] = train_loader
+        self.task_memory[self.task_count] = data.DataLoader(train_loader.dataset,
+                                         batch_size = self.config['batch_size'] / 10,
+                                         shuffle=False,
+                                         num_workers=self.config['n_workers'],
+                                         pin_memory=True)
         self.task_count += 1
 
         # Cache the data for faster processing
@@ -210,9 +214,9 @@ class GEM(NormalNN):
                     if self.gpu:
                         mem_input = mem_input.cuda()
                         mem_target = mem_target.cuda()
-                        mem_out = self.forward(mem_input)
-                        batch_loss = self.criterion(mem_out, mem_target)
-                        mem_loss += batch_loss
+                    mem_out = self.forward(mem_input)
+                    batch_loss = self.criterion(mem_out, mem_target)
+                    mem_loss += batch_loss
                 mem_loss.backward()
                 # store the gradients
                 self.task_grads[t] = self.grad_to_vector()
