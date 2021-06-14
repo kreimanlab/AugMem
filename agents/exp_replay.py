@@ -330,6 +330,7 @@ class AGEM(NormalNN):
 
         # check if gradient violates constraints
         if self.task_count > 0:
+            print(self.past_task_grads.shape)
             current_grad_vec = self.grad_to_vector()
             dotp = current_grad_vec * self.past_task_grads
             dotp = dotp.sum(dim=1)
