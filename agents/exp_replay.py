@@ -180,9 +180,11 @@ class GEM(NormalNN):
         # update model as normal
         super(GEM, self).learn_stream(train_loader)
 
+        self.task_memory[self.task_count] = train_loader.dataset
+        self.task_count += 1
+
         # Cache the data for faster processing
         for t, mem in self.task_memory.items():
-            print(t, mem)
             # concatentate all the data in each task
             mem_loader = data.DataLoader(mem,
                                          batch_size = len(mem),
@@ -195,6 +197,8 @@ class GEM(NormalNN):
                     mem_input = mem_input.cuda()
                     mem_target = mem_target.cuda()
             self.task_mem_cache[t] = {'data':mem_input,'target':mem_target,'task':t}
+
+
 
 
     def update_model(self, out, targets):
