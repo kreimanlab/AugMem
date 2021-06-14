@@ -330,11 +330,8 @@ class AGEM(NormalNN):
 
         # check if gradient violates constraints
         if self.task_count > 0:
-            print(self.past_task_grads.shape)
             current_grad_vec = self.grad_to_vector()
-            dotp = current_grad_vec * self.past_task_grads
-            dotp = dotp.sum(dim=1)
-            if (dotp < 0).sum() != 0:
+            if np.dot(current_grad_vec, self.past_task_grads) < 0:
                 new_grad = self.project_grad(current_grad_vec)
                 # copy the gradients back
                 self.vector_to_grad(new_grad)
