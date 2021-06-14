@@ -339,6 +339,7 @@ class AGEM(NormalNN):
                     self.vector_to_grad(new_grad.cuda())
                 else:
                     self.vector_to_grad(new_grad)
+                assert np.notequal(current_grad_vec, new_grad).all()
 
         self.optimizer.step()
         return loss.detach()
