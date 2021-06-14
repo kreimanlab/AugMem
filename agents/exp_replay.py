@@ -198,9 +198,6 @@ class GEM(NormalNN):
                     mem_target = mem_target.cuda()
             self.task_mem_cache[t] = {'data':mem_input,'target':mem_target,'task':t}
 
-
-
-
     def update_model(self, out, targets):
 
         # compute gradients on previous tasks
