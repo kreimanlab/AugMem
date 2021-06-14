@@ -55,7 +55,8 @@ def run(args, run):
         'memory_Nslots': args.memory_Nslots,
         'memory_Nfeat': args.memory_Nfeat,
         'freeze_batchnorm': args.freeze_batchnorm,
-        'freeze_memory': args.freeze_memory
+        'freeze_memory': args.freeze_memory,
+        'batch_size': args.batch_size
         }
 
     if args.dataset == "core50":
