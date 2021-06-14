@@ -277,7 +277,6 @@ class AGEM(NormalNN):
         output: x, p-vector
         """
         scalar = ( (np.dot(gradient, self.past_task_grads))/(np.dot(self.past_task_grads, self.past_task_grads)) )
-        print('scalar', scalar)
         return gradient - scalar * self.past_task_grads
 
 
@@ -340,7 +339,7 @@ class AGEM(NormalNN):
                     self.vector_to_grad(new_grad.cuda())
                 else:
                     self.vector_to_grad(new_grad)
-                assert np.not_equal(current_grad_vec, new_grad).all()
+                assert np.not_equal(current_grad_vec, new_grad).any()
 
         self.optimizer.step()
         return loss.detach()
