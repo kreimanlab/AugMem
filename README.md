@@ -1,7 +1,7 @@
 # Hypothesis-driven Stream Learning with Augmented Memory
 Authors: Mengmi Zhang*, Rohil Badkundri*, Morgan Talbot, Gabriel Kreiman (* equal contribution)
 
-Manuscript download [HERE](http://arxiv.org/abs/2104.02206)
+Manuscript download [HERE](http://arxiv.org/abs/2104.02206); supplementary download [HERE](https://d2b38104-6cb6-430b-95b9-765197711bda.usrfiles.com/ugd/d2b381_d96d5c9ef91642afa421b9ef53cfb6dc.pdf)
 
 ## Project description 
 
