@@ -131,6 +131,14 @@ To visualize the t-sne clusterring, run ```VisRepresentsTSNE.m```
 
 To visualize the learnt hypothesis projected to 2D image space, run ```VisAttentionBackImage.m``` followed by ```PlotMontage.m```. 
 
+## Updates
+ 
+1. We conducted two additional ablation studies: replace SqueezeNet with MobileNetV2 as backone, replace random sampling for replay buffer with herding
+ (see ```Other_Ablated_AugMem``` folder and ```matlab/*_aaai.m``` files for result plots)
+ 
+2. We added five additional baseline comparisions including: BIC, GSS, StableSGD, COPE, LwF
+ (see ```other_models``` folder)
+ 
 ## Notes
 
 The source code is for illustration purpose only. Path reconfigurations may be needed to run some MATLAB scripts. We do not provide techinical supports but we would be happy to discuss about SCIENCE!
