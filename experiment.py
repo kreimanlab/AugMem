@@ -12,9 +12,9 @@ def run(args, run):
         
     # read dataframe containing information for each task
     if args.offline:
-        task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'stream', 'train_all.txt'), index_col = 0)
-    else:
         task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'offline', 'train_all.txt'), index_col = 0)
+    else:
+        task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'stream', 'train_all.txt'), index_col = 0)
     
     # get classes for each task
     active_out_nodes = task_df.groupby('task')['label'].unique().map(list).to_dict()
