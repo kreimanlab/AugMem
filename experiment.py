@@ -64,8 +64,10 @@ def run(args, run):
         agent_config["n_class"] = 12
     elif args.dataset == "ilab2mlight":
         agent_config["n_class"] = 14
+    elif args.dataset == "cifar100":
+        agent_config["n_class"] = 100
     else:
-        raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight'")
+        raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight' or 'cifar100'")
         
     # initialize agent
     agent = agents.__dict__[args.agent_type].__dict__[args.agent_name](agent_config)
@@ -84,8 +86,16 @@ def run(args, run):
         test_data = datasets.Generic_Dataset(
             dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario, offline=args.offline,
             run=run, train=False, transform=composed)
+    elif args.dataset == 'cifar100':
+        # image transformations
+        composed = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+        # get test data
+        test_data = datasets.Generic_Dataset(
+            dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario, offline=args.offline,
+            run=run, train=False, transform=composed)
     else:
-        raise ValueError("Invalid dataset name, try 'core50' or 'toybox'")
+        raise ValueError("Invalid dataset name, try 'core50' or 'toybox' or 'ilab2mlight' or 'cifar100'")
 
     if args.validate:
         # splitting test set into test and validation
@@ -137,12 +147,12 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 train_data = datasets.CORE50(
                     dataroot=args.dataroot, filelist_root=args.filelist_root, scenario=args.scenario,
                     offline=args.offline, run=run, batch=task, transform=transforms)
-            elif args.dataset == 'toybox' or args.dataset == 'ilab2mlight':
+            elif args.dataset == 'toybox' or args.dataset == 'ilab2mlight' or args.dataset == 'cifar100':
                 train_data = datasets.Generic_Dataset(
                     dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario,
                     offline=args.offline, run=run, batch=task, transform=transforms)
             else:
-                raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight'")
+                raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight' or 'cifar100'")
             
             # get train loader
             train_loader = torch.utils.data.DataLoader(
