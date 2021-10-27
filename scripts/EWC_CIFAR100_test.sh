@@ -12,7 +12,7 @@ elif [ "$DATASET" = "ilab2mlight" ]; then
     DATAROOT="/media/data/Datasets/ilab2M/iLab-2M-Light"
     #DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/ilab/iLab-2M-Light/"
 elif [ "$DATASET" = "cifar100" ]; then
-    DATAROOT="/media/data/morgan_data/cifar100/iLab-2M-Light"
+    DATAROOT="/media/data/morgan_data/cifar100"
 else
     echo "Invalid dataset name!"
     exit
