@@ -51,6 +51,8 @@ def train_test_split(dataset, outdir, test_sess):
     elif dataset == 'ilab2mlight':
         # ilab2mlight pre-sampled in ilab2mlight_sample.py due to the complexity of this dataset's structure
         examples = dirmap
+    elif dataset == 'cifar100':
+        examples = dirmap
     else:
         raise ValueError("Invalid dataset name")
     
