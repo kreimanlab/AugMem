@@ -137,8 +137,12 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
     
         print('Active output nodes for this task: ')
         print(agent.active_out_nodes)
-        
-        for epoch in range(args.n_epoch):
+
+        if (args.n_epoch_first_task is not None) and (task == 0):
+            n_epoch = args.n_epoch_first_task
+        else:
+            n_epoch = args.n_epoch
+        for epoch in range(n_epoch):
                 
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
@@ -244,6 +248,7 @@ def get_args(argv):
     parser.add_argument('--model_weights', type=str, default=None,
                         help="The path to the file for the model weights (*.pth).")
     parser.add_argument('--n_epoch', type = int, default = 1, help="Number of epochs to train")
+    parser.add_argument('--n_epoch_first_task', type=int, default=None, help="Number of epochs to train on the first task (may be different from n_epoch, which is used for the other tasks)")
     
     # keep track of validation accuracy
     parser.add_argument('--validate', default = False, action = 'store_true',  dest = 'validate', help = "To keep track of validation accuracy or not")

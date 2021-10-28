@@ -20,4 +20,4 @@ fi
 
 mkdir -p ${OUTDIR}/class_iid/EWC_ResNet18/
 
-python -u experiment.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT  --lr 0.0001 --reg_coef 100  --n_runs 2 --model_type resnet --model_name ResNet18 --pretrained --agent_type regularization --agent_name EWC  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_iid/EWC_ResNet18/log.log
+python -u experiment.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT  --lr 0.0001 --reg_coef 100 --n_epoch_first_task 10 --n_runs 2 --model_type resnet --model_name ResNet18 --pretrained --agent_type regularization --agent_name EWC  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_iid/EWC_ResNet18/log.log
