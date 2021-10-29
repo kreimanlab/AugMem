@@ -1,3 +1,5 @@
 .idea/
 data/
 dataloaders/*_task_filelists
+*__pycache__/
+*_outputs/
