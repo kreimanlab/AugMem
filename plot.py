@@ -17,6 +17,7 @@ def get_args(argv):
                         help="Where to store accuracy table")
     parser.add_argument('--result_dir', default=['NormalNN_ResNet18'], nargs="+", help="a custom subdirectory to store results")
     parser.add_argument('--validation', default=False, action='store_true',  dest='validate', help="Plot validation accuracy instead of testing")
+    parser.add_argument('--n_class_per_task', type=int, default=2, help="Number of classes trained on in each task")
     
     # return parsed arguments
     args = parser.parse_args(argv)
@@ -57,14 +58,14 @@ def main():
         
     if args.scenario in ['class_iid', 'class_instance']:
         x = result.columns
-        y = [100/2, 100/4, 100/6, 100/8, 100/10]
+        y = [100/((task+1)*args.n_class_per_task) for task in range(len(x))]
         ax.plot(x,y, label='Chance')
         
     ax.legend()
     ax.set_ylabel('Accuracy')
     ax.set_yticks([t for t in range(0,100,10)])
     ax.set_xlabel('Task')
-    ax.set_xticks([t for t in range(5)])
+    ax.set_xticks([t for t in range(len(result.columns))])
     
     ax.set_title(args.scenario)
     
