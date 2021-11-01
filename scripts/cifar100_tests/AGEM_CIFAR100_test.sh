@@ -22,5 +22,5 @@ mkdir -p ${OUTDIR}/class_iid/AGEM_ResNet18/
 mkdir -p plots
 
 python -u experiment.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT  --lr 0.0001 --n_epoch_first_task 25 --n_runs 1 --model_type resnet --model_name ResNet18 --pretrained --agent_type exp_replay --agent_name AGEM  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 --output_dir $OUTDIR | tee ${OUTDIR}/class_iid/AGEM_ResNet18/log.log
-python -u plot.py --n_class_per_task 10 --scenario class_iid --output_dir $OUTDIR --result_dir AGEM_ResNet18
+python -u plot.py --n_class_per_task 5 --scenario class_iid --output_dir $OUTDIR --result_dir AGEM_ResNet18
 mv plots/AGEM_class_iid.png ${OUTDIR}/class_iid/AGEM_ResNet18/AGEM_class_iid.png
