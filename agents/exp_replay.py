@@ -92,7 +92,6 @@ class NaiveRehearsal(NormalNN):
             self.task_memory[self.task_count] = Storage(train_loader.dataset, randind)
 
 
-
 class GEM(NormalNN):
     """
     @inproceedings{GradientEpisodicMemory,
@@ -121,7 +120,7 @@ class GEM(NormalNN):
             # storing gradients for parameters that have gradients
             if p.grad is not None:
                 vec.append(p.grad.view(-1))
-            # filling zeroes for network parameters that have no gradient
+            # filling zeroes for network paramters that have no gradient
             else:
                 vec.append(p.data.clone().fill_(0).view(-1))
         return torch.cat(vec)
@@ -140,7 +139,6 @@ class GEM(NormalNN):
             # increment the pointer
             pointer += num_param
 
-
     def project2cone2(self, gradient, memories):
         """
             Solves the GEM dual QP described in the paper given a proposed
@@ -153,7 +151,7 @@ class GEM(NormalNN):
 
             Modified from: https://github.com/facebookresearch/GradientEpisodicMemory/blob/master/model/gem.py#L70
         """
-        # get the margin
+        # get te margin
         margin = self.config['reg_coef']
         # convert memories to numpy
         memories_np = memories.cpu().contiguous().double().numpy()
@@ -174,33 +172,35 @@ class GEM(NormalNN):
             new_grad = new_grad.cuda()
         return new_grad
 
-
     def learn_stream(self, train_loader):
-        print(self.task_memory)
+
         # update model as normal
         super(GEM, self).learn_stream(train_loader)
 
-        self.task_memory[self.task_count] = data.DataLoader(train_loader.dataset,
-                                                             batch_size=self.config['batch_size'] // 10,
-                                                             shuffle=False,
-                                                             num_workers=self.config['n_workers'],
-                                                             pin_memory=True)
-        self.task_count += 1
+        # Cache the data for faster processing
+        for t, mem in self.task_memory.items():
+            # concatentate all the data in each task
+            mem_loader = data.DataLoader(mem,
+                                         batch_size=len(mem),
+                                         shuffle=False,
+                                         num_workers=self.config['n_workers'],
+                                         pin_memory=True)
+            assert len(mem_loader) == 1, 'The length of mem_loader should be 1'
+            for i, (mem_input, mem_target) in enumerate(mem_loader):
+                if self.gpu:
+                    mem_input = mem_input.cuda()
+                    mem_target = mem_target.cuda()
+            self.task_mem_cache[t] = {'data': mem_input, 'target': mem_target, 'task': t}
 
     def update_model(self, out, targets):
 
         # compute gradients on previous tasks
         if self.task_count > 0:
-            for t, mem_loader in self.task_memory.items():
+            for t, mem in self.task_memory.items():
                 self.zero_grad()
-                mem_loss = 0
-                for i, (mem_input, mem_target) in enumerate(mem_loader):
-                    if self.gpu:
-                        mem_input = mem_input.cuda()
-                        mem_target = mem_target.cuda()
-                    mem_out = self.forward(mem_input)
-                    batch_loss = self.criterion(mem_out, mem_target)
-                    mem_loss += batch_loss
+                # feed the data from memory and collect the gradients
+                mem_out = self.forward(self.task_mem_catch[t]['data'])
+                mem_loss = self.criterion(mem_out, self.task_mem_cache['target'])
                 mem_loss.backward()
                 # store the gradients
                 self.task_grads[t] = self.grad_to_vector()
