@@ -76,6 +76,7 @@ def main():
     ax.set_yticks([t for t in range(0,100,10)])
     ax.set_xlabel('Task')
     ax.set_xticks([t for t in range(len(result.columns))])
+    ax.set_xticklabels([t+1 for t in range(len(result.columns))]) # Task labelling starts at 1, not 0
 
     if args.task1:
         ax.set_title(args.scenario + "\n Task 1 accuracy")
