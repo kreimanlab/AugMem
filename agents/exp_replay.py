@@ -526,9 +526,14 @@ class iCARL(NormalNN):
             
         # get distance between y and mu_ys
         dists = (feature - means).pow(2).sum(1).squeeze() # (batch_size, n_classes)
-        _, preds = dists.min(1)
-                
-        return (preds)
+
+        if batch_size == 1:
+            # If batch_size = 1, specifying dim param as 1 causes error because there is only one row
+            preds = dists.argmin()
+        else:
+            _, preds = dists.min(1)
+
+        return preds
           
         
     # compute validation loss/accuracy
