@@ -301,7 +301,7 @@ def main():
     
     # setting seed for reproducibility
     torch.manual_seed(0)
-    np.numpy.random.seed(0)
+    np.random.seed(0)
     random.seed(0)
             
     test_accs = []
