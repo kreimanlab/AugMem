@@ -1,6 +1,8 @@
 import os
 import sys
 import argparse
+import random
+import numpy as np
 import torch
 import pandas as pd
 from dataloaders import datasets
@@ -299,6 +301,8 @@ def main():
     
     # setting seed for reproducibility
     torch.manual_seed(0)
+    np.numpy.random.seed(0)
+    random.seed(0)
             
     test_accs = []
     test_accs_1st = []
