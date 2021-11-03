@@ -21,6 +21,6 @@ fi
 mkdir -p ${OUTDIR}/class_iid/NormalNN_ResNet18_offline/
 mkdir -p plots
 
-python -u experiment.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT  --lr 0.001 --n_epoch_first_task 25  --n_epoch 10 --n_runs 1 --model_type resnet --model_name ResNet18 --pretrained --agent_type default --agent_name NormalNN  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 100 --n_workers 8 --output_dir $OUTDIR --offline | tee ${OUTDIR}/class_iid/NormalNN_ResNet18_offline/log.log
+python -u experiment.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT  --lr 0.001 --n_epoch_first_task 25  --n_epoch 25 --n_runs 1 --model_type resnet --model_name ResNet18 --pretrained --agent_type default --agent_name NormalNN  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 100 --n_workers 8 --output_dir $OUTDIR --offline | tee ${OUTDIR}/class_iid/NormalNN_ResNet18_offline/log.log
 python -u plot.py --n_class_per_task 5 --scenario class_iid --output_dir $OUTDIR --result_dir NormalNN_ResNet18_offline
 mv plots/NormalNN_class_iid.png ${OUTDIR}/class_iid/NormalNN_ResNet18_offline/NormalNN_offline_class_iid.png
