@@ -1,6 +1,8 @@
 import os
 import sys
 import argparse
+import random
+import numpy as np
 import torch
 import pandas as pd
 from dataloaders import datasets
@@ -12,17 +14,15 @@ def run(args, run):
         
     # read dataframe containing information for each task
     if args.offline:
-        task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'stream', 'train_all.txt'), index_col = 0)
-    else:
         task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'offline', 'train_all.txt'), index_col = 0)
+    else:
+        task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'stream', 'train_all.txt'), index_col = 0)
     
     # get classes for each task
     active_out_nodes = task_df.groupby('task')['label'].unique().map(list).to_dict()
             
     # get tasks
     tasks = task_df.task.unique()
-    #print('aaaaaaaaaaaaaaaaaaa')
-    #print(tasks)
     
     # include classes from previous task in active output nodes for current task
     for i in range(1, len(tasks)):
@@ -55,7 +55,8 @@ def run(args, run):
         'memory_Nslots': args.memory_Nslots,
         'memory_Nfeat': args.memory_Nfeat,
         'freeze_batchnorm': args.freeze_batchnorm,
-        'freeze_memory': args.freeze_memory
+        'freeze_memory': args.freeze_memory,
+        'batch_size': args.batch_size
         }
 
     if args.dataset == "core50":
@@ -64,8 +65,10 @@ def run(args, run):
         agent_config["n_class"] = 12
     elif args.dataset == "ilab2mlight":
         agent_config["n_class"] = 14
+    elif args.dataset == "cifar100":
+        agent_config["n_class"] = 100
     else:
-        raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight'")
+        raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight' or 'cifar100'")
         
     # initialize agent
     agent = agents.__dict__[args.agent_type].__dict__[args.agent_name](agent_config)
@@ -84,8 +87,16 @@ def run(args, run):
         test_data = datasets.Generic_Dataset(
             dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario, offline=args.offline,
             run=run, train=False, transform=composed)
+    elif args.dataset == 'cifar100':
+        # image transformations
+        composed = transforms.Compose(
+            [transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+        # get test data
+        test_data = datasets.Generic_Dataset(
+            dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario, offline=args.offline,
+            run=run, train=False, transform=composed)
     else:
-        raise ValueError("Invalid dataset name, try 'core50' or 'toybox'")
+        raise ValueError("Invalid dataset name, try 'core50' or 'toybox' or 'ilab2mlight' or 'cifar100'")
 
     if args.validate:
         # splitting test set into test and validation
@@ -95,10 +106,9 @@ def run(args, run):
     else:
         val_data = None
 
+    test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs = train(agent, composed, args, run, tasks, active_out_nodes, test_data, val_data)
         
-    test_accs = train(agent, composed, args, run, tasks, active_out_nodes, test_data, val_data)
-        
-    return (test_accs)
+    return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs
     
 
 def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_data):
@@ -117,6 +127,10 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
     
     # to store val accuracies
     val_accs = []
+
+    test_accs_all_epochs = []
+    test_accs_1st_all_epochs = []
+    val_accs_all_epochs = []
     
     # iterate over tasks
     for task in range(ntask):
@@ -127,8 +141,16 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
     
         print('Active output nodes for this task: ')
         print(agent.active_out_nodes)
-        
-        for epoch in range(args.n_epoch):
+
+        test_accs_all_epochs.append([])
+        test_accs_1st_all_epochs.append([])
+        val_accs_all_epochs.append([])
+
+        if (args.n_epoch_first_task is not None) and (task == 0):
+            n_epoch = args.n_epoch_first_task
+        else:
+            n_epoch = args.n_epoch
+        for epoch in range(n_epoch):
                 
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
@@ -137,17 +159,17 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 train_data = datasets.CORE50(
                     dataroot=args.dataroot, filelist_root=args.filelist_root, scenario=args.scenario,
                     offline=args.offline, run=run, batch=task, transform=transforms)
-            elif args.dataset == 'toybox' or args.dataset == 'ilab2mlight':
+            elif args.dataset == 'toybox' or args.dataset == 'ilab2mlight' or args.dataset == 'cifar100':
                 train_data = datasets.Generic_Dataset(
                     dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario,
                     offline=args.offline, run=run, batch=task, transform=transforms)
             else:
-                raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight'")
+                raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight' or 'cifar100'")
             
             # get train loader
             train_loader = torch.utils.data.DataLoader(
                     train_data, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
-            
+
             if args.validate:
                 # then test and val data are subsets, not datasets and need to be dealt with accordingly
                 # get test data only for the seen classes
@@ -180,18 +202,21 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             if args.validate:
                 val_acc, val_time = agent.validation(val_loader)
                 print(' * Val Acc: {acc:.3f}, Time: {time:.2f}'.format(acc=val_acc, time=val_time))
+                val_accs_all_epochs[task].append(val_acc)
     
             test_acc, test_time = agent.validation(test_loader)            
             print(' * Test Acc: {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
+            test_accs_all_epochs[task].append(test_acc)
             
             test_acc_1st, test_time_1st = agent.validation(test_loader_1st)            
             print(' * Test Acc (1st): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc_1st, time=test_time_1st))
+            test_accs_1st_all_epochs[task].append(test_acc_1st)
             
             if args.visualize:
                 attread_filename = 'visualization/' + args.scenario + '/' + args.scenario + '_run_' + str(run) + '_task_' + str(task) + '_epoch_' + str(epoch)
                 agent.visualize_att_read(attread_filename)
                 agent.visualize_memory(attread_filename)
-            
+
         # after all the epochs, store test_acc
         test_accs.append(test_acc)
         test_accs_1st.append(test_acc_1st)
@@ -200,7 +225,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         if val_data is not None:
             val_accs.append(val_acc)
     
-    return (test_accs_1st, test_accs, val_accs)
+    return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs
 
 
 def get_args(argv):
@@ -234,6 +259,7 @@ def get_args(argv):
     parser.add_argument('--model_weights', type=str, default=None,
                         help="The path to the file for the model weights (*.pth).")
     parser.add_argument('--n_epoch', type = int, default = 1, help="Number of epochs to train")
+    parser.add_argument('--n_epoch_first_task', type=int, default=None, help="Number of epochs to train on the first task (may be different from n_epoch, which is used for the other tasks)")
     
     # keep track of validation accuracy
     parser.add_argument('--validate', default = False, action = 'store_true',  dest = 'validate', help = "To keep track of validation accuracy or not")
@@ -283,24 +309,33 @@ def main():
     
     # setting seed for reproducibility
     torch.manual_seed(0)
+    np.random.seed(0)
+    random.seed(0)
             
     test_accs = []
     test_accs_1st = []
     
     val_accs = []
+
+    test_accs_all_epochs = []
+    test_accs_1st_all_epochs = []
     
     # iterate over runs
     for r in range(args.n_runs):
         print('=============Stream Learning Run ' + str(r) + '=============')
-        test_acc_1st, test_acc, val_acc = run(args, r)
+        test_acc_1st, test_acc, val_acc, test_acc_all_epochs, test_acc_1st_all_epochs = run(args, r)
         test_accs.append(test_acc)
         test_accs_1st.append(test_acc_1st)
         val_accs.append(val_acc)
+        test_accs_all_epochs.append(test_acc_all_epochs)
+        test_accs_1st_all_epochs.append(test_acc_1st_all_epochs)
     
     # converting list of list of testing accuracies for each run to a dataframe
     test_df = pd.DataFrame(test_accs)
     test_df_1st = pd.DataFrame(test_accs_1st)
     val_df = pd.DataFrame(val_accs)
+    test_all_epochs_dfs = [pd.DataFrame(accs) for accs in test_accs_all_epochs]
+    test_1st_all_epochs_dfs = [pd.DataFrame(accs) for accs in test_accs_1st_all_epochs]
     
     if args.custom_folder is None:
         if args.offline:
@@ -330,11 +365,18 @@ def main():
     print(val_df)
     
     # writing testing accuracy to csv
-    test_df_1st.to_csv(os.path.join(total_path,'test_task1.csv'), index = False, header = False)
-    test_df.to_csv(os.path.join(total_path,'test.csv'), index = False, header = False)
+    test_df_1st.to_csv(os.path.join(total_path,'test_task1.csv'), index=False, header=False)
+    test_df.to_csv(os.path.join(total_path,'test.csv'), index=False, header=False)
     
     # writing validation accuracy to csv, will be empty if no validation is performed
-    val_df.to_csv(os.path.join(total_path,'val.csv'), index = False, header = False)
+    val_df.to_csv(os.path.join(total_path,'val.csv'), index=False, header=False)
+
+    # writing testing accuracies across all epochs to cvs
+    for nrun, df in enumerate(test_all_epochs_dfs):
+        df.to_csv(os.path.join(total_path, 'test_all_epochs_run' + str(nrun) + '.csv'), index=False, header=False)
+
+    for nrun, df in enumerate(test_1st_all_epochs_dfs):
+        df.to_csv(os.path.join(total_path, 'test_task1_all_epochs_run' + str(nrun) + '.csv'), index=False, header=False)
     
     # writing hyperparameters
     args_dict = vars(args)
