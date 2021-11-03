@@ -65,10 +65,7 @@ def main():
 
     if args.scenario in ['class_iid', 'class_instance']:
         x = result.columns
-        if args.task1:
-            y = [100 / args.n_class_per_task for _ in range(len(x))]
-        else:
-            y = [100/((task+1)*args.n_class_per_task) for task in range(len(x))]
+        y = [100/((task+1)*args.n_class_per_task) for task in range(len(x))]
         ax.plot(x,y, label='Chance')
 
     ax.legend()
