@@ -167,6 +167,7 @@ class AugMem(nn.Module):
             ListUsedMem = self.ListUsedMem.clone().cuda()
         else:
             diff = (memory - self.memory)**2
+            ListUsedMem = self.ListUsedMem.clone()
         
         diff = ListUsedMem.view(1,self.MemNumSlots).matmul(diff)
         #print(diff)

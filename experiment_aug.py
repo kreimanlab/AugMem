@@ -85,18 +85,10 @@ def run(args, run):
         # get test data
         test_data = datasets.CORE50(
                     dataroot = args.dataroot, filelist_root = args.filelist_root, scenario = args.scenario, offline = args.offline, run = run, train = False, transform=composed)
-    elif args.dataset == 'toybox' or args.dataset == 'ilab2mlight':
+    elif args.dataset == 'toybox' or args.dataset == 'ilab2mlight' or args.dataset == 'cifar100':
         # image transformations
         composed = transforms.Compose(
             [transforms.Resize([224, 224]), transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
-        # get test data
-        test_data = datasets.Generic_Dataset(
-            dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario, offline=args.offline,
-            run=run, train=False, transform=composed)
-    elif args.dataset == 'cifar100':
-        # image transformations
-        composed = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         # get test data
         test_data = datasets.Generic_Dataset(
             dataroot=args.dataroot, dataset=args.dataset, filelist_root=args.filelist_root, scenario=args.scenario, offline=args.offline,
