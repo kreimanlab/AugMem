@@ -227,25 +227,21 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 agent.visualize_att_read(attread_filename)
                 agent.visualize_memory(attread_filename)
 
-            # Save state of model
-            torch.save(agent.model.state_dict(), os.path.join(get_out_path(args), "model_state_epoch_" + str(epoch)))
+            if task == 0:
+                # Save state of model
+                torch.save(agent.model.state_dict(), os.path.join(get_out_path(args), "model_state_epoch_" + str(epoch) + ".pth"))
 
         if task == 0 and args.n_epoch_first_task > 1:
             # Reload state of network when it had highest test accuracy on first task
             max_acc_ind = test_accs_all_epochs[0].index(max(test_accs_all_epochs[0]))
             print("Test accs on 1st task: " + str(test_accs_all_epochs[0]))
-            print("Max test acc: " + str(test_accs_all_epochs[0][max_acc_ind]))
-            #device = torch.device("cuda")
-            print("Model is on GPU: " + str(next(agent.model.parameters()).is_cuda))
+            print("Loading model parameters with this max test acc: " + str(test_accs_all_epochs[0][max_acc_ind]))
             agent.model.load_state_dict(torch.load(
-                os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind)))
+                os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind) + ".pth"))
             )
-            print("Model is on GPU: " + str(next(agent.model.parameters()).is_cuda))
-            test_acc, test_time = agent.validation(test_loader)
-            print(' * Test Acc (after reloading): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
-            #agent.model.to(device)
-
-            assert test_acc == test_accs_all_epochs[0][max_acc_ind], "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading correctly?"
+            reload_test_acc, test_time = agent.validation(test_loader)
+            print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
+            assert reload_test_acc == test_accs_all_epochs[0][max_acc_ind], "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading correctly?"
 
         # after all the epochs, store test_acc
         test_accs.append(test_acc)
