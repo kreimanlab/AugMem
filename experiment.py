@@ -29,28 +29,28 @@ def get_out_path(args):
 
 
 def run(args, run):
-        
+
     # read dataframe containing information for each task
     if args.offline:
         task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'offline', 'train_all.txt'), index_col = 0)
     else:
         task_df = pd.read_csv(os.path.join('dataloaders', args.dataset + '_task_filelists', args.scenario, 'run' + str(run), 'stream', 'train_all.txt'), index_col = 0)
-    
+
     # get classes for each task
     active_out_nodes = task_df.groupby('task')['label'].unique().map(list).to_dict()
-            
+
     # get tasks
     tasks = task_df.task.unique()
-    
+
     # include classes from previous task in active output nodes for current task
     for i in range(1, len(tasks)):
         active_out_nodes[i].extend(active_out_nodes[i-1])
-        
+
     # since the same classes might be in multiple tasks, want to consider only the unique elements in each list
     # mostly an aesthetic thing, will not affect results
     for i in range(1, len(tasks)):
         active_out_nodes[i] = list(set(active_out_nodes[i]))
-    
+
     # agent parameters
     agent_config = {
         'lr': args.lr,
@@ -87,7 +87,7 @@ def run(args, run):
         agent_config["n_class"] = 100
     else:
         raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight' or 'cifar100'")
-        
+
     # initialize agent
     agent = agents.__dict__[args.agent_type].__dict__[args.agent_name](agent_config)
 
@@ -117,38 +117,38 @@ def run(args, run):
         val_data = None
 
     test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs = train(agent, composed, args, run, tasks, active_out_nodes, test_data, val_data)
-        
+
     return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs
-    
+
 
 def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_data):
-    
+
     if args.offline:
-        print('============BEGINNING OFFLINE LEARNING============') 
-    else:   
-        print('============BEGINNING STREAM LEARNING============') 
-    
+        print('============BEGINNING OFFLINE LEARNING============')
+    else:
+        print('============BEGINNING STREAM LEARNING============')
+
     # number of tasks
     ntask = len(tasks)
-    
+
     # to store test accuracies
     test_accs = []
     test_accs_1st = []
-    
+
     # to store val accuracies
     val_accs = []
 
     test_accs_all_epochs = []
     test_accs_1st_all_epochs = []
     val_accs_all_epochs = []
-    
+
     # iterate over tasks
     for task in range(ntask):
-        
+
         print('=============Training Task ' + str(task) + '=============')
-    
+
         agent.active_out_nodes = active_out_nodes[task]
-    
+
         print('Active output nodes for this task: ')
         print(agent.active_out_nodes)
 
@@ -161,7 +161,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         else:
             n_epoch = args.n_epoch
         for epoch in range(n_epoch):
-                
+
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
             # get training data pertaining to chosen scenario, task, run
@@ -175,7 +175,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                     offline=args.offline, run=run, batch=task, transform=transforms)
             else:
                 raise ValueError("Invalid dataset name, try 'core50', 'toybox', or 'ilab2mlight' or 'cifar100'")
-            
+
             # get train loader
             train_loader = torch.utils.data.DataLoader(
                     train_data, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
@@ -188,74 +188,85 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 #labels = [task_test_data[i] for i in range(len(task_test_data))]
                 test_loader = torch.utils.data.DataLoader(
                             task_test_data, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
-                val_inds = [i for i in range(len(val_data)) if val_data.dataset.labels[val_data.indices[i]] in agent.active_out_nodes] 
+                val_inds = [i for i in range(len(val_data)) if val_data.dataset.labels[val_data.indices[i]] in agent.active_out_nodes]
                 task_val_data = torch.utils.data.Subset(val_data, val_inds)
                 val_loader = torch.utils.data.DataLoader(
                         task_val_data, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
-                
+
             else:
                 # get test data only for the seen classes
                 test_inds = [i for i in range(len(test_data)) if test_data.labels[i] in agent.active_out_nodes] # list(range(len(test_data)))
                 task_test_data = torch.utils.data.Subset(test_data, test_inds)
                 test_loader = torch.utils.data.DataLoader(
                             task_test_data, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
-                
+
                 test_inds_1st = [i for i in range(len(test_data)) if test_data.labels[i] in active_out_nodes[0]] # retrive first task
                 task_test_data_1st = torch.utils.data.Subset(test_data, test_inds_1st)
                 test_loader_1st = torch.utils.data.DataLoader(
                             task_test_data_1st, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
-            
+
             # learn
             agent.learn_stream(train_loader)
-            
+
             # validate if applicable
             if args.validate:
                 val_acc, val_time = agent.validation(val_loader)
                 print(' * Val Acc: {acc:.3f}, Time: {time:.2f}'.format(acc=val_acc, time=val_time))
                 val_accs_all_epochs[task].append(val_acc)
-    
-            test_acc, test_time = agent.validation(test_loader)            
+
+            test_acc, test_time = agent.validation(test_loader)
             print(' * Test Acc: {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
             test_accs_all_epochs[task].append(test_acc)
-            
-            test_acc_1st, test_time_1st = agent.validation(test_loader_1st)            
+
+            test_acc_1st, test_time_1st = agent.validation(test_loader_1st)
             print(' * Test Acc (1st): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc_1st, time=test_time_1st))
             test_accs_1st_all_epochs[task].append(test_acc_1st)
-            
+
             if args.visualize:
                 attread_filename = 'visualization/' + args.scenario + '/' + args.scenario + '_run_' + str(run) + '_task_' + str(task) + '_epoch_' + str(epoch)
                 agent.visualize_att_read(attread_filename)
                 agent.visualize_memory(attread_filename)
 
-            if task == 0:
+            if args.keep_best_task1_network and task == 0:
                 # Save state of model
                 torch.save(agent.model.state_dict(), os.path.join(get_out_path(args), "model_state_epoch_" + str(epoch) + ".pth"))
 
-        if task == 0 and args.n_epoch_first_task > 1:
+        if args.keep_best_task1_network and task == 0 and args.n_epoch_first_task > 1:
             # Reload state of network when it had highest test accuracy on first task
-            max_acc_ind = test_accs_all_epochs[0].index(max(test_accs_all_epochs[0]))
+            max_acc = max(test_accs_all_epochs[0])
+            max_acc_ind = test_accs_all_epochs[0].index(max_acc)
             print("Test accs on 1st task: " + str(test_accs_all_epochs[0]))
-            print("Loading model parameters with this max test acc: " + str(test_accs_all_epochs[0][max_acc_ind]))
+            print("Loading model parameters with this max test acc: " + str(max_acc))
             agent.model.load_state_dict(torch.load(
                 os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind) + ".pth"))
             )
             reload_test_acc, test_time = agent.validation(test_loader)
             print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
-            assert reload_test_acc == test_accs_all_epochs[0][max_acc_ind], "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading correctly?"
+            assert reload_test_acc == max_acc, "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading its state correctly?"
+
+            # Set the test/val accs to be stored for task1 to those corresponding to the best-performing network
+            test_acc = max_acc
+            test_acc_1st = test_accs_1st_all_epochs[0][max_acc_ind]
+            if args.validate:
+                val_acc = val_accs_all_epochs[0][max_acc_ind]
+
+            # Delete saved network states
+            for save_num in range(len(test_accs_all_epochs[0])):
+                os.remove(os.path.join(get_out_path(args), "model_state_epoch_" + str(save_num) + ".pth"))
 
         # after all the epochs, store test_acc
         test_accs.append(test_acc)
         test_accs_1st.append(test_acc_1st)
-        
+
         # same with val acc
         if val_data is not None:
             val_accs.append(val_acc)
-    
+
     return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs
 
 
 def get_args(argv):
-    
+
     # defining arguments that the user can pass into the program
     parser = argparse.ArgumentParser()
 
@@ -267,7 +278,7 @@ def get_args(argv):
     # scenario/task
     parser.add_argument('--scenario', type = str, default = 'iid', help = "How to set up tasks, e.g. iid => randomly assign data to each task")
     parser.add_argument('--n_runs', type = int, default = 1, help = "Number of times to repeat the experiment with different data orderings")
-    
+
     # model hyperparameters/type
     parser.add_argument('--model_type', type=str, default='resnet', help="The type (mlp|lenet|vgg|resnet) of backbone network")
     parser.add_argument('--model_name', type=str, default='ResNet18', help="The name of actual model for the backbone")
@@ -286,66 +297,67 @@ def get_args(argv):
                         help="The path to the file for the model weights (*.pth).")
     parser.add_argument('--n_epoch', type = int, default = 1, help="Number of epochs to train")
     parser.add_argument('--n_epoch_first_task', type=int, default=None, help="Number of epochs to train on the first task (may be different from n_epoch, which is used for the other tasks)")
-    
+    parser.add_argument('--keep_best_task1_net', default=False, dest='keep_best_task1_net', action='store_true', help="When training for multiple epochs on task 1, retrieve the network state with best testing accuracy for learning subsequent tasks")
+
     # keep track of validation accuracy
     parser.add_argument('--validate', default = False, action = 'store_true',  dest = 'validate', help = "To keep track of validation accuracy or not")
-    
+
     # for regularization models
     parser.add_argument('--reg_coef', type=float, default=1, help="The coefficient for regularization. Larger means less plasilicity. ")
 
     # for replay models
     parser.add_argument('--memory_size', type=int, default=1200, help="Number of training examples to keep in memory")
-    
+
     # for augmented memory model
     parser.add_argument('--memory_Nslots', type=int, default=100, help="Number of memory slots to keep in memory")
     parser.add_argument('--memory_Nfeat', type=int, default=512, help="Feature dim per memory slot to keep in memory")
     parser.add_argument('--visualize', default = False, action = 'store_true',  dest = 'visualize', help = "To visualize memory and attentions (only valid for AugMem")
 
     # directories
-    #parser.add_argument('--dataroot', type = str, default = 'data/core50', help = "Directory that contains the data")    
+    #parser.add_argument('--dataroot', type = str, default = 'data/core50', help = "Directory that contains the data")
     parser.add_argument('--dataroot', type = str, default = '/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50', help = "Directory that contains the data")
     #parser.add_argument('--dataroot', type = str, default = '/home/mengmi/Projects/Proj_CL_NTM/data/core50', help = "Directory that contains the data")
     parser.add_argument('--filelist_root', type = str, default = 'dataloaders', help = "Directory that contains the filelists for each task")
     parser.add_argument('--output_dir', default='core50_outputs', help="Where to store accuracy table")
     parser.add_argument('--custom_folder', default=None, type=str, help="a custom subdirectory to store results")
-    
+
     # gpu/cpu settings
     parser.add_argument('--gpuid', nargs="+", type=int, default=[-1],
                         help="The list of gpuid, ex:--gpuid 3 1. Negative value means cpu-only")
     parser.add_argument('--n_workers', default=1, type = int, help="Number of cpu workers for dataloader")
-    
+
     # return parsed arguments
     args = parser.parse_args(argv)
     return args
 
 
 def main():
-    
+
     # get command line arguments
     args = get_args(sys.argv[1:])
-    
+
     # appending path to cwd to directories
     args.dataroot = os.path.join(os.getcwd(),args.dataroot)
     args.output_dir = os.path.join(os.getcwd(),args.output_dir)
-    
+
     # ensure that a valid scenario has been passed
     if args.scenario not in ['iid', 'class_iid', 'instance', 'class_instance']:
         print('Invalid scenario passed, must be one of: iid, class_iid, instance, class_instance')
         return
-    
+
     # setting seed for reproducibility
     torch.manual_seed(0)
     np.random.seed(0)
     random.seed(0)
-            
+
     test_accs = []
     test_accs_1st = []
-    
+
     val_accs = []
 
     test_accs_all_epochs = []
     test_accs_1st_all_epochs = []
-    
+
     # iterate over runs
     for r in range(args.n_runs):
         print('=============Stream Learning Run ' + str(r) + '=============')
@@ -355,7 +367,7 @@ def main():
         val_accs.append(val_acc)
         test_accs_all_epochs.append(test_acc_all_epochs)
         test_accs_1st_all_epochs.append(test_acc_1st_all_epochs)
-    
+
     # converting list of list of testing accuracies for each run to a dataframe
     test_df = pd.DataFrame(test_accs)
     test_df_1st = pd.DataFrame(test_accs_1st)
@@ -364,22 +376,22 @@ def main():
     test_1st_all_epochs_dfs = [pd.DataFrame(accs) for accs in test_accs_1st_all_epochs]
 
     total_path = get_out_path(args)
-        
+
     # printing test acc dataframe
     print("testing accuracies")
     print(test_df)
-    
+
     print("testing accuracies --- 1st task")
     print(test_df_1st)
-    
+
     # printing val_acc dataframe
     print("validation accuracies")
     print(val_df)
-    
+
     # writing testing accuracy to csv
     test_df_1st.to_csv(os.path.join(total_path,'test_task1.csv'), index=False, header=False)
     test_df.to_csv(os.path.join(total_path,'test.csv'), index=False, header=False)
-    
+
     # writing validation accuracy to csv, will be empty if no validation is performed
     val_df.to_csv(os.path.join(total_path,'val.csv'), index=False, header=False)
 
@@ -389,7 +401,7 @@ def main():
 
     for nrun, df in enumerate(test_1st_all_epochs_dfs):
         df.to_csv(os.path.join(total_path, 'test_task1_all_epochs_run' + str(nrun) + '.csv'), index=False, header=False)
-    
+
     # writing hyperparameters
     args_dict = vars(args)
     with open(os.path.join(total_path,'hyperparams.csv'), 'w') as f:
@@ -398,5 +410,5 @@ def main():
 
 
 if __name__ == '__main__':
-    
+
     main()
