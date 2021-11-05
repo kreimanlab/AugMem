@@ -227,15 +227,15 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 agent.visualize_att_read(attread_filename)
                 agent.visualize_memory(attread_filename)
 
-            if args.keep_best_task1_network and task == 0:
+            if args.keep_best_net_all_tasks or (args.keep_best_task1_network and task == 0):
                 # Save state of model
                 torch.save(agent.model.state_dict(), os.path.join(get_out_path(args), "model_state_epoch_" + str(epoch) + ".pth"))
 
-        if args.keep_best_task1_network and task == 0 and args.n_epoch_first_task > 1:
+        if (args.keep_best_net_all_tasks or (args.keep_best_task1_network and task == 0)) and args.n_epoch_first_task > 1:
             # Reload state of network when it had highest test accuracy on first task
             max_acc = max(test_accs_all_epochs[0])
             max_acc_ind = test_accs_all_epochs[0].index(max_acc)
-            print("Test accs on 1st task: " + str(test_accs_all_epochs[0]))
+            print("Test accs on task + " + str(task) + ": " + str(test_accs_all_epochs[0]))
             print("Loading model parameters with this max test acc: " + str(max_acc))
             agent.model.load_state_dict(torch.load(
                 os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind) + ".pth"))
@@ -244,7 +244,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
             assert reload_test_acc == max_acc, "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading its state correctly?"
 
-            # Set the test/val accs to be stored for task1 to those corresponding to the best-performing network
+            # Set the test/val accs to be stored for this task to those corresponding to the best-performing network
             test_acc = max_acc
             test_acc_1st = test_accs_1st_all_epochs[0][max_acc_ind]
             if args.validate:
@@ -297,7 +297,8 @@ def get_args(argv):
                         help="The path to the file for the model weights (*.pth).")
     parser.add_argument('--n_epoch', type = int, default = 1, help="Number of epochs to train")
     parser.add_argument('--n_epoch_first_task', type=int, default=None, help="Number of epochs to train on the first task (may be different from n_epoch, which is used for the other tasks)")
-    parser.add_argument('--keep_best_task1_net', default=False, dest='keep_best_task1_net', action='store_true', help="When training for multiple epochs on task 1, retrieve the network state with best testing accuracy for learning subsequent tasks")
+    parser.add_argument('--keep_best_task1_net', default=False, dest='keep_best_task1_net', action='store_true', help="When training for multiple epochs on task 1, retrieve the network state (among those after each epoch) with best testing accuracy for learning subsequent tasks")
+    parser.add_argument('--keep_best_net_all_tasks', default=False, dest='keep_best_net_all_tasks', action='store_true', help="When training for multiple epochs on more than one task: for each task, retrieve the network state (among those after each epoch) with best testing accuracy for learning subsequent tasks")
 
     # keep track of validation accuracy
     parser.add_argument('--validate', default = False, action = 'store_true',  dest = 'validate', help = "To keep track of validation accuracy or not")
