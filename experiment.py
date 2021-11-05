@@ -245,6 +245,8 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             print(' * Test Acc (after reloading): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
             #agent.model.to(device)
 
+            assert test_acc == test_accs_all_epochs[0][max_acc_ind], "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading correctly?"
+
         # after all the epochs, store test_acc
         test_accs.append(test_acc)
         test_accs_1st.append(test_acc_1st)
