@@ -162,6 +162,8 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             n_epoch = args.n_epoch
         for epoch in range(n_epoch):
 
+            print(torch.cuda.memory_summary())
+
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
             # get training data pertaining to chosen scenario, task, run
@@ -233,9 +235,9 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
 
         if (args.keep_best_net_all_tasks or (args.keep_best_task1_net and task == 0)) and args.n_epoch_first_task > 1:
             # Reload state of network when it had highest test accuracy on first task
-            max_acc = max(test_accs_all_epochs[0])
-            max_acc_ind = test_accs_all_epochs[0].index(max_acc)
-            print("Test accs on task + " + str(task) + ": " + str(test_accs_all_epochs[0]))
+            max_acc = max(test_accs_all_epochs[task])
+            max_acc_ind = test_accs_all_epochs[task].index(max_acc)
+            print("Test accs on task " + str(task) + ": " + str(test_accs_all_epochs[task]))
             print("Loading model parameters with this max test acc: " + str(max_acc))
             agent.model.load_state_dict(torch.load(
                 os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind) + ".pth"))
@@ -246,12 +248,12 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
 
             # Set the test/val accs to be stored for this task to those corresponding to the best-performing network
             test_acc = max_acc
-            test_acc_1st = test_accs_1st_all_epochs[0][max_acc_ind]
+            test_acc_1st = test_accs_1st_all_epochs[task][max_acc_ind]
             if args.validate:
-                val_acc = val_accs_all_epochs[0][max_acc_ind]
+                val_acc = val_accs_all_epochs[task][max_acc_ind]
 
             # Delete saved network states
-            for save_num in range(len(test_accs_all_epochs[0])):
+            for save_num in range(len(test_accs_all_epochs[task])):
                 os.remove(os.path.join(get_out_path(args), "model_state_epoch_" + str(save_num) + ".pth"))
 
         # after all the epochs, store test_acc
