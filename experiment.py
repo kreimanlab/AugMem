@@ -227,11 +227,11 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 agent.visualize_att_read(attread_filename)
                 agent.visualize_memory(attread_filename)
 
-            if args.keep_best_net_all_tasks or (args.keep_best_task1_network and task == 0):
+            if args.keep_best_net_all_tasks or (args.keep_best_task1_net and task == 0):
                 # Save state of model
                 torch.save(agent.model.state_dict(), os.path.join(get_out_path(args), "model_state_epoch_" + str(epoch) + ".pth"))
 
-        if (args.keep_best_net_all_tasks or (args.keep_best_task1_network and task == 0)) and args.n_epoch_first_task > 1:
+        if (args.keep_best_net_all_tasks or (args.keep_best_task1_net and task == 0)) and args.n_epoch_first_task > 1:
             # Reload state of network when it had highest test accuracy on first task
             max_acc = max(test_accs_all_epochs[0])
             max_acc_ind = test_accs_all_epochs[0].index(max_acc)
