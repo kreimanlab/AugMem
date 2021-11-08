@@ -216,17 +216,21 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
 
             # validate if applicable
             if args.validate:
-                val_acc, val_time = agent.validation(val_loader)
-                print(' * Val Acc: {acc:.3f}, Time: {time:.2f}'.format(acc=val_acc, time=val_time))
-                val_accs_all_epochs[task].append(val_acc)
+                val_acc_out, val_acc_direct, val_time = agent.validation(val_loader)
+                print(' * Val Acc: A-out {val_acc_out:.3f}, A-direct {val_acc_direct:.3f}, Time: {time:.2f}'.format(
+                    val_acc_out=val_acc_out, val_acc_direct=val_acc_direct, time=val_time))
+                val_accs_all_epochs[task].append(val_acc_direct)
 
-            test_acc, test_time = agent.validation(test_loader)
-            print(' * Test Acc: {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
-            test_accs_all_epochs[task].append(test_acc)
+            test_acc_out, test_acc_direct, test_time = agent.validation(test_loader)
+            print(' * Test Acc: A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
+                test_acc_out=test_acc_out, test_acc_direct=test_acc_direct, time=test_time))
+            test_accs_all_epochs[task].append(test_acc_direct)
 
-            test_acc_1st, test_time_1st = agent.validation(test_loader_1st)
-            print(' * Test Acc (1st): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc_1st, time=test_time_1st))
-            test_accs_1st_all_epochs[task].append(test_acc_1st)
+            test_acc_out_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
+            print(
+                ' * Test Acc (1st task): A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
+                    test_acc_out=test_acc_out_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
+            test_accs_1st_all_epochs[task].append(test_acc_direct_1st)
 
             if args.visualize:
                 attread_filename = 'visualization/' + args.scenario + '/' + args.scenario + '_run_' + str(run) + '_task_' + str(task) + '_epoch_' + str(epoch)
@@ -246,27 +250,27 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             agent.model.load_state_dict(torch.load(
                 os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind) + ".pth"))
             )
-            reload_test_acc, test_time = agent.validation(test_loader)
-            print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
-            assert reload_test_acc == max_acc, "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading its state correctly?"
+            reload_test_acc_out, reload_test_acc_direct, test_time = agent.validation(test_loader)
+            print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=reload_test_acc_direct, time=test_time))
+            assert reload_test_acc_direct == max_acc, "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading its state correctly?"
 
             # Set the test/val accs to be stored for this task to those corresponding to the best-performing network
-            test_acc = max_acc
-            test_acc_1st = test_accs_1st_all_epochs[task][max_acc_ind]
+            test_acc_direct = max_acc
+            test_acc_direct_1st = test_accs_1st_all_epochs[task][max_acc_ind]
             if args.validate:
-                val_acc = val_accs_all_epochs[task][max_acc_ind]
+                val_acc_direct = val_accs_all_epochs[task][max_acc_ind]
 
             # Delete saved network states
             for save_num in range(len(test_accs_all_epochs[task])):
                 os.remove(os.path.join(get_out_path(args), "model_state_epoch_" + str(save_num) + ".pth"))
 
         # after all the epochs, store test_acc
-        test_accs.append(test_acc)
-        test_accs_1st.append(test_acc_1st)
+        test_accs.append(test_acc_direct)
+        test_accs_1st.append(test_acc_direct_1st)
 
         # same with val acc
         if val_data is not None:
-            val_accs.append(val_acc)
+            val_accs.append(val_acc_direct)
 
     return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs
 
