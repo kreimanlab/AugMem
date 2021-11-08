@@ -329,7 +329,6 @@ def get_args(argv):
                         help="The coefficient for replays. Larger means less plasilicity. ")
     parser.add_argument('--replay_times', type=int, default=1, help="The number of times to replay per batch. ")
     parser.add_argument('--mem_sparse', type=float, default=5, help="The number of times to replay per batch. ")
-    parser.add_argument('--first_times', type=int, default=1, help="The number of times to go through task 0. ")
 
     # for augmented memory model
     parser.add_argument('--memory_topK', type=int, default=1, help="Number of memory slots to keep in memory")
