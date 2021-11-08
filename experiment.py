@@ -8,7 +8,6 @@ import pandas as pd
 from dataloaders import datasets
 from torchvision import transforms
 import agents
-import gc
 
 
 def get_out_path(args):
@@ -162,9 +161,6 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         else:
             n_epoch = args.n_epoch
         for epoch in range(n_epoch):
-
-            gc.collect()
-            torch.cuda.empty_cache()
 
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
