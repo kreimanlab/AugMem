@@ -241,7 +241,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 os.path.join(get_out_path(args), "model_state_epoch_" + str(max_acc_ind) + ".pth"))
             )
             reload_test_acc, test_time = agent.validation(test_loader)
-            print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=test_acc, time=test_time))
+            print(' * Test Acc (after reloading best model): {acc:.3f}, Time: {time:.2f}'.format(acc=reload_test_acc, time=test_time))
             assert reload_test_acc == max_acc, "Test accuracy of reloaded model does not match original highest test accuracy. Is the model saving and loading its state correctly?"
 
             # Set the test/val accs to be stored for this task to those corresponding to the best-performing network
