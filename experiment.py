@@ -92,7 +92,7 @@ def run(args, run):
     agent = agents.__dict__[args.agent_type].__dict__[args.agent_name](agent_config)
 
     if args.dataset == 'cifar100' and args.agent_name == "AGEM":
-        img_size = [128, 128]
+        img_size = [64, 64]
     else:
         img_size = [224, 224]
     print("Resizing images to " + str(img_size))
