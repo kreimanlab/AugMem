@@ -5,18 +5,20 @@ OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
 
 if [ "$DATASET" = "core50" ]; then
-    DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50"
+    DDATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50"
 elif [ "$DATASET" = "toybox" ]; then
-    DATAROOT="/media/data/morgan_data/toybox/images"
+    DDATAROOT="/media/data/morgan_data/toybox/images"
 elif [ "$DATASET" = "ilab2mlight" ]; then
-    DATAROOT="/media/data/Datasets/ilab2M/iLab-2M-Light"
+    DDATAROOT="/media/data/Datasets/ilab2M/iLab-2M-Light"
     #DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/ilab/iLab-2M-Light/"
 elif [ "$DATASET" = "cifar100" ]; then
-    DATAROOT="./data/cifar100"
+    DDATAROOT="./data/cifar100"
 else
     echo "Invalid dataset name!"
     exit
 fi
+
+DATAROOT=${3:-${DDATAROOT}}
 
 mkdir -p ${OUTDIR}/class_iid/AGEM_ResNet18/
 mkdir -p plots
