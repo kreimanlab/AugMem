@@ -317,14 +317,11 @@ class AGEM(NormalNN):
             self.zero_grad()
             mem_loss = 0
             for i, (mem_input, mem_target) in enumerate(self.memory_loader):
-                if self.gpu:
-                    mem_input = mem_input.cuda()
+                # if self.gpu:
+                #     mem_input = mem_input.cuda()
+                #     mem_target = mem_target.cuda()
                 mem_out = self.forward(mem_input)
-                mem_input.cpu()
-                if self.gpu:
-                    mem_target = mem_target.cuda()
                 batch_loss = self.criterion(mem_out, mem_target)
-                mem_target.cpu()
                 mem_loss += batch_loss
             mem_loss.backward()
             # store the gradients
