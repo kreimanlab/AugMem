@@ -6,7 +6,7 @@ OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
 lr=${3:-1}
 mem_sparse=${4:-1}
-memory_Nslots={5:-1}
+memory_Nslots=${5:-1}
 
 if [ "$DATASET" = "core50" ]; then
     DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50"
