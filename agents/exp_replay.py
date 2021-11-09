@@ -322,7 +322,7 @@ class AGEM(NormalNN):
                     mem_target = mem_target.cuda()
                 mem_out = self.forward(mem_input)
                 batch_loss = self.criterion(mem_out, mem_target)
-                mem_loss += batch_loss.item()
+                mem_loss += batch_loss
             mem_loss.backward()
             # store the gradients
             self.past_task_grads = self.grad_to_vector().cpu()
