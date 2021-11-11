@@ -82,15 +82,15 @@ class NaiveRehearsal(NormalNN):
             # 3. Randomly decide which images to keep in memory
             if new_task_next:
                 self.task_count += 1
-            # (a) Decide the number of samples to be saved
-            num_sample_per_task = self.memory_size // self.task_count
-            num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
-            # (b) Remove examples from memory to reserve space for new examples from latest task
-            for storage in self.task_memory.values():
-                storage.reduce(num_sample_per_task)
-            # (c) Randomly choose some samples from the current task and save them to memory
-            randind = torch.randperm(len(train_loader.dataset))[:num_sample_per_task]
-            self.task_memory[self.task_count] = Storage(train_loader.dataset, randind)
+                # (a) Decide the number of samples to be saved
+                num_sample_per_task = self.memory_size // self.task_count
+                num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
+                # (b) Remove examples from memory to reserve space for new examples from latest task
+                for storage in self.task_memory.values():
+                    storage.reduce(num_sample_per_task)
+                # (c) Randomly choose some samples from the current task and save them to memory
+                randind = torch.randperm(len(train_loader.dataset))[:num_sample_per_task]
+                self.task_memory[self.task_count] = Storage(train_loader.dataset, randind)
             
             
 
@@ -293,25 +293,25 @@ class AGEM(NormalNN):
         if new_task_next:
             self.task_count += 1
 
-        # (a) Decide the number of samples to be saved
-        num_sample_per_task = self.memory_size // self.task_count
-        num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
-        # (b) Remove examples from memory to reserve space for new examples from latest task
-        for storage in self.task_memory.values():
-            storage.reduce(num_sample_per_task)
-        # (c) Randomly choose some samples from the current task and save them to memory
-        randind = torch.randperm(len(train_loader.dataset))[:num_sample_per_task]
-        self.task_memory[self.task_count] = Storage(train_loader.dataset, randind)
-        # (d) Get dataloader containing samples from all tasks
-        # 1. Get the replay loader
-        replay_list = []
-        for storage in self.task_memory.values():
-            replay_list.append(storage)
-        replay_data = torch.utils.data.ConcatDataset(replay_list)
-        self.memory_loader = data.DataLoader(replay_data,
-                                             batch_size=(self.config['batch_size'] // 10) + 1,
-                                             num_workers=train_loader.num_workers,
-                                             pin_memory=True)
+            # (a) Decide the number of samples to be saved
+            num_sample_per_task = self.memory_size // self.task_count
+            num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
+            # (b) Remove examples from memory to reserve space for new examples from latest task
+            for storage in self.task_memory.values():
+                storage.reduce(num_sample_per_task)
+            # (c) Randomly choose some samples from the current task and save them to memory
+            randind = torch.randperm(len(train_loader.dataset))[:num_sample_per_task]
+            self.task_memory[self.task_count] = Storage(train_loader.dataset, randind)
+            # (d) Get dataloader containing samples from all tasks
+            # 1. Get the replay loader
+            replay_list = []
+            for storage in self.task_memory.values():
+                replay_list.append(storage)
+            replay_data = torch.utils.data.ConcatDataset(replay_list)
+            self.memory_loader = data.DataLoader(replay_data,
+                                                 batch_size=(self.config['batch_size'] // 10) + 1,
+                                                 num_workers=train_loader.num_workers,
+                                                 pin_memory=True)
 
     def update_model(self, out, targets):
 

@@ -59,16 +59,16 @@ class L2(NormalNN):
         # Save the weight and importance of weights of current task
         if new_task_next:
             self.task_count += 1
-        #print(']]]]]]]]]]]]]]]]]]]]]')
-        #print(self.task_count)
-        if self.online_reg and len(self.regularization_terms) > 0:
-            # always use only one slot in regularization_terms
-            self.regularization_terms[1] = {'importance': importance, 
-                                            'task_param': task_param}
-        else:
-            # use new slot to store task-specific information
-            self.regularization_terms[self.task_count] = {'importance': importance,
-                                                          'task_param': task_param}
+            #print(']]]]]]]]]]]]]]]]]]]]]')
+            #print(self.task_count)
+            if self.online_reg and len(self.regularization_terms) > 0:
+                # always use only one slot in regularization_terms
+                self.regularization_terms[1] = {'importance': importance,
+                                                'task_param': task_param}
+            else:
+                # use new slot to store task-specific information
+                self.regularization_terms[self.task_count] = {'importance': importance,
+                                                              'task_param': task_param}
         
     def criterion(self, inputs, targets, regularization = True, **kwargs):
         loss = super(L2, self).criterion(inputs, targets, **kwargs)
