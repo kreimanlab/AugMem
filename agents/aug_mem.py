@@ -49,7 +49,7 @@ class AugMem(nn.Module):
         
         self.ListUsedMem = torch.zeros(self.MemNumSlots)
 
-        if self.config.visualize:
+        if self.config['visualize']:
             # for visualization purpose
             # store some examples of reading attention
             self.viz_read_att = {i: [] for i in range(agent_config['n_class'])}
@@ -300,7 +300,7 @@ class AugMem(nn.Module):
         
         self.net.evalModeOn()        
         # keeping track of prior mode
-        if self.config.visualize:
+        if self.config['visualize']:
             self.viz_read_att = {i: [] for i in range(self.config['n_class'])}
             self.viz_input = {i: [] for i in range(self.config['n_class'])}
             self.viz_direct = {i: [] for i in range(self.config['n_class'])}
@@ -322,7 +322,7 @@ class AugMem(nn.Module):
             acc_out.update(accuracy(output, target), inputs.size(0))
             acc_dir.update(accuracy(direct, target), inputs.size(0))
 
-            if self.config.visualize:
+            if self.config['visualize']:
                 #save some examples for visualization
                 for bat in range(att_read.size(0)):
                     label = target[bat].item()
