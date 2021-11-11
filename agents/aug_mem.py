@@ -48,11 +48,12 @@ class AugMem(nn.Module):
         self.criterion_bn = nn.BCELoss(reduction = 'mean')
         
         self.ListUsedMem = torch.zeros(self.MemNumSlots)
-        
-        # for visualization purpose
-        # store some examples of reading attention
-        self.viz_read_att = {i: [] for i in range(agent_config['n_class'])}
-        self.viz_NumEgs = 50 #number of examples to store for visualization
+
+        if self.config['visualize']:
+            # for visualization purpose
+            # store some examples of reading attention
+            self.viz_read_att = {i: [] for i in range(agent_config['n_class'])}
+            self.viz_NumEgs = 50 #number of examples to store for visualization
         
         # gpu config
         if agent_config['gpuid'][0] >= 0:
@@ -299,10 +300,11 @@ class AugMem(nn.Module):
         
         self.net.evalModeOn()        
         # keeping track of prior mode
-        self.viz_read_att = {i: [] for i in range(self.config['n_class'])}
-        self.viz_input = {i: [] for i in range(self.config['n_class'])}
-        self.viz_direct = {i: [] for i in range(self.config['n_class'])}
-        self.confusemat = torch.zeros((len(self.active_out_nodes),len(self.active_out_nodes)))          
+        if self.config['visualize']:
+            self.viz_read_att = {i: [] for i in range(self.config['n_class'])}
+            self.viz_input = {i: [] for i in range(self.config['n_class'])}
+            self.viz_direct = {i: [] for i in range(self.config['n_class'])}
+            self.confusemat = torch.zeros((len(self.active_out_nodes),len(self.active_out_nodes)))
         
         for i, (inputs, target) in enumerate(dataloader):
             if self.gpu:
@@ -319,27 +321,28 @@ class AugMem(nn.Module):
                 target = target.cpu()
             acc_out.update(accuracy(output, target), inputs.size(0))
             acc_dir.update(accuracy(direct, target), inputs.size(0))
-            
-            #save some examples for visualization
-            for bat in range(att_read.size(0)):
-                label = target[bat].item()   
-                
-                #save confusion mat
-                direct_vec = direct[bat,:].view(1,-1) 
-                _, predicted_label = direct_vec.topk(k = 1, dim = 1, largest = True, sorted = True)
-                self.confusemat[label, predicted_label] = self.confusemat[label, predicted_label] + 1
-                
-                if len(self.viz_read_att[label]) < self.viz_NumEgs:
-                    #view(-1,13,13,64,100) as shape for attention read
-                    att_read_bat = att_read[bat,:].view(1,13,13,64,self.MemNumSlots)
-                    #find top retireved memory address
-                    att_read_ind = torch.argsort(att_read_bat, dim=4, descending=True)
-                    att_read_ind = att_read_ind[:,:,:,:,0:self.MemtopK]
-                    att_read_bat = att_read_ind.view(1,13,13,64,self.MemtopK)
-                    att_read_np = att_read_bat.numpy()
-                    self.viz_read_att[label].append(att_read_np)    
-                    self.viz_direct[label].append(direct_vec.detach().cpu().numpy())
-                    self.viz_input[label].append(inputs[bat,:,:,:].view(1,3,224,224).detach().cpu().numpy())
+
+            if self.config['visualize']:
+                #save some examples for visualization
+                for bat in range(att_read.size(0)):
+                    label = target[bat].item()
+
+                    #save confusion mat
+                    direct_vec = direct[bat,:].view(1,-1)
+                    _, predicted_label = direct_vec.topk(k = 1, dim = 1, largest = True, sorted = True)
+                    self.confusemat[label, predicted_label] = self.confusemat[label, predicted_label] + 1
+
+                    if len(self.viz_read_att[label]) < self.viz_NumEgs:
+                        #view(-1,13,13,64,100) as shape for attention read
+                        att_read_bat = att_read[bat,:].view(1,13,13,64,self.MemNumSlots)
+                        #find top retireved memory address
+                        att_read_ind = torch.argsort(att_read_bat, dim=4, descending=True)
+                        att_read_ind = att_read_ind[:,:,:,:,0:self.MemtopK]
+                        att_read_bat = att_read_ind.view(1,13,13,64,self.MemtopK)
+                        att_read_np = att_read_bat.numpy()
+                        self.viz_read_att[label].append(att_read_np)
+                        self.viz_direct[label].append(direct_vec.detach().cpu().numpy())
+                        self.viz_input[label].append(inputs[bat,:,:,:].view(1,3,224,224).detach().cpu().numpy())
         # return model to original mode
         #self.net.trainModeOn()
         #self.classinet.trainModeOn()
