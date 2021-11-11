@@ -238,10 +238,10 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                     test_acc_out=test_acc_out_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
             test_accs_1st_all_epochs[task].append(test_acc_direct_1st)
 
-            if args.visualize:
-                attread_filename = 'visualization/' + args.scenario + '/' + args.scenario + '_run_' + str(run) + '_task_' + str(task) + '_epoch_' + str(epoch)
-                agent.visualize_att_read(attread_filename)
-                agent.visualize_memory(attread_filename)
+            # if args.visualize:
+            #     attread_filename = 'visualization/' + args.scenario + '/' + args.scenario + '_run_' + str(run) + '_task_' + str(task) + '_epoch_' + str(epoch)
+            #     agent.visualize_att_read(attread_filename)
+            #     agent.visualize_memory(attread_filename)
 
             if args.keep_best_net_all_tasks or (args.keep_best_task1_net and task == 0):
                 # Save state of model
