@@ -177,7 +177,7 @@ class NormalNN(nn.Module):
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        return loss.detach() #mengmi
+        return loss #.detach() #mengmi
     
     # stream learning
     def learn_stream(self, train_loader, new_task=True):
