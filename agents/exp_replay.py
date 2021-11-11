@@ -19,7 +19,7 @@ class NaiveRehearsal(NormalNN):
         self.task_memory = {}        
         
         # override learn stream function to include replay
-        def learn_stream(self, train_loader, new_task=True):
+        def learn_stream(self, train_loader, new_task_next=True):
             # 1. Get the replay loader
             replay_list = []
             for storage in self.task_memory.values():
@@ -80,7 +80,7 @@ class NaiveRehearsal(NormalNN):
             print(' * Train Acc: {acc.avg:.3f}'.format(acc=acc))
             
             # 3. Randomly decide which images to keep in memory
-            if new_task:
+            if new_task_next:
                 self.task_count += 1
             # (a) Decide the number of samples to be saved
             num_sample_per_task = self.memory_size // self.task_count
@@ -176,10 +176,10 @@ class GEM(NormalNN):
         return new_grad
         
     
-    def learn_stream(self, train_loader, new_task=True):
+    def learn_stream(self, train_loader, new_task_next=True):
         
         # update model as normal
-        super(GEM, self).learn_stream(train_loader, new_task=new_task)
+        super(GEM, self).learn_stream(train_loader, new_task_next=new_task_next)
         
         # Cache the data for faster processing
         for t, mem in self.task_memory.items():
@@ -285,12 +285,12 @@ class AGEM(NormalNN):
         return gradient - scalar * self.past_task_grads
 
 
-    def learn_stream(self, train_loader, new_task=True):
+    def learn_stream(self, train_loader, new_task_next=True):
         # update model as normal
         super(AGEM, self).learn_stream(train_loader)
 
         # Randomly decide which images to keep in memory
-        if new_task:
+        if new_task_next:
             self.task_count += 1
 
         # (a) Decide the number of samples to be saved
@@ -591,11 +591,11 @@ class iCARL(NormalNN):
         return loss.detach()
     
     
-    def learn_stream(self, train_loader, new_task=True):
+    def learn_stream(self, train_loader, new_task_next=True):
         
         # if no classes have been seen yet, learn normally
         if self.seen_classes == 0:
-            super(iCARL, self).learn_stream(train_loader, new_task)
+            super(iCARL, self).learn_stream(train_loader, new_task_next)
             
         # else replay
         else:

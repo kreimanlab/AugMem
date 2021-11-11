@@ -180,7 +180,7 @@ class NormalNN(nn.Module):
         return loss #.detach() #mengmi
     
     # stream learning
-    def learn_stream(self, train_loader, new_task=True):
+    def learn_stream(self, train_loader, new_task_next=True):
         
         losses = AverageMeter()
         acc = AverageMeter()

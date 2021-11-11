@@ -212,8 +212,8 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 test_loader_1st = torch.utils.data.DataLoader(
                             task_test_data_1st, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
 
-            # learn
-            agent.learn_stream(train_loader, new_task=(epoch == 0))
+            # learn (new_task_next is true if we are on the last epoch of this task).
+            agent.learn_stream(train_loader, new_task_next=(epoch == n_epoch-1))
 
             # validate if applicable
             if args.validate:
