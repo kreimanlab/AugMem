@@ -1,6 +1,6 @@
 # Param #1: dataset name, e.g. core50, toybox, ilab2mlight, cifar100. Default is core50
 # Param #2: GPU ID. Default is 0
-# Usage example: ./scripts/AugMem.sh cifar100 0 0.00001 1 100
+# Usage example: ./scripts/AugMem.sh cifar100 0 0.001 1 100 /media/data/morgan_data/cifar100
 DATASET="${1:-"core50"}"
 OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
@@ -9,18 +9,20 @@ mem_sparse=${4:-1}
 memory_Nslots=${5:-1}
 
 if [ "$DATASET" = "core50" ]; then
-    DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50"
+    DDATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50"
 elif [ "$DATASET" = "toybox" ]; then
-    DATAROOT="/media/data/morgan_data/toybox/images"
+    DDATAROOT="/media/data/morgan_data/toybox/images"
 elif [ "$DATASET" = "ilab2mlight" ]; then
-    DATAROOT="/media/data/Datasets/ilab2M/iLab-2M-Light"
+    DDATAROOT="/media/data/Datasets/ilab2M/iLab-2M-Light"
     #DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/ilab/iLab-2M-Light/"
 elif [ "$DATASET" = "cifar100" ]; then
-    DATAROOT="./data/cifar100"
+    DDATAROOT="./data/cifar100"
 else
     echo "Invalid dataset name!"
     exit
 fi
+
+DATAROOT=${6:-${DDATAROOT}}
 
 OUTDIR=augmem_gridsearch_cifar100
 custom_folder="AugMem_lr_${lr}_memsparse_${mem_sparse}_memNslots_${memory_Nslots}"
