@@ -41,7 +41,7 @@ class L2(NormalNN):
         return importance
     
     
-    def learn_stream(self, train_loader):
+    def learn_stream(self, train_loader, new_task=True):
         
         print('#reg terms: ', len(self.regularization_terms))
         
@@ -57,7 +57,8 @@ class L2(NormalNN):
         importance = self.calculate_importance(train_loader)
         
         # Save the weight and importance of weights of current task
-        self.task_count += 1
+        if new_task:
+            self.task_count += 1
         #print(']]]]]]]]]]]]]]]]]]]]]')
         #print(self.task_count)
         if self.online_reg and len(self.regularization_terms) > 0:
@@ -66,7 +67,7 @@ class L2(NormalNN):
                                             'task_param': task_param}
         else:
             # use new slot to store task-specific information
-            self.regularization_terms[self.task_count] = {'importance': importance, 
+            self.regularization_terms[self.task_count] = {'importance': importance,
                                                           'task_param': task_param}
         
     def criterion(self, inputs, targets, regularization = True, **kwargs):

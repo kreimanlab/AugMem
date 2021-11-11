@@ -8,6 +8,7 @@ import pandas as pd
 from dataloaders import datasets
 from torchvision import transforms
 import agents
+import time
 
 
 def get_out_path(args):
@@ -212,7 +213,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                             task_test_data_1st, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
 
             # learn
-            agent.learn_stream(train_loader)
+            agent.learn_stream(train_loader, new_task=(epoch == 0))
 
             # validate if applicable
             if args.validate:
@@ -340,6 +341,8 @@ def get_args(argv):
 
 def main():
 
+    start_time = time.time()
+
     # get command line arguments
     args = get_args(sys.argv[1:])
 
@@ -414,6 +417,8 @@ def main():
     with open(os.path.join(total_path,'hyperparams.csv'), 'w') as f:
         for key, val in args_dict.items():
             f.write("{key},{val}\n".format(key=key, val=val))
+
+    print("Total running time: " + str(time.time() - start_time))
 
 
 if __name__ == '__main__':

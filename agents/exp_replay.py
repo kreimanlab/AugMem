@@ -19,7 +19,7 @@ class NaiveRehearsal(NormalNN):
         self.task_memory = {}        
         
         # override learn stream function to include replay
-        def learn_stream(self, train_loader):
+        def learn_stream(self, train_loader, new_task=True):
             # 1. Get the replay loader
             replay_list = []
             for storage in self.task_memory.values():
@@ -80,7 +80,8 @@ class NaiveRehearsal(NormalNN):
             print(' * Train Acc: {acc.avg:.3f}'.format(acc=acc))
             
             # 3. Randomly decide which images to keep in memory
-            self.task_count += 1
+            if new_task:
+                self.task_count += 1
             # (a) Decide the number of samples to be saved
             num_sample_per_task = self.memory_size // self.task_count
             num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
@@ -175,10 +176,10 @@ class GEM(NormalNN):
         return new_grad
         
     
-    def learn_stream(self, train_loader):
+    def learn_stream(self, train_loader, new_task=True):
         
         # update model as normal
-        super(GEM, self).learn_stream(train_loader)
+        super(GEM, self).learn_stream(train_loader, new_task=new_task)
         
         # Cache the data for faster processing
         for t, mem in self.task_memory.items():
@@ -284,12 +285,14 @@ class AGEM(NormalNN):
         return gradient - scalar * self.past_task_grads
 
 
-    def learn_stream(self, train_loader):
+    def learn_stream(self, train_loader, new_task=True):
         # update model as normal
         super(AGEM, self).learn_stream(train_loader)
 
         # Randomly decide which images to keep in memory
-        self.task_count += 1
+        if new_task:
+            self.task_count += 1
+
         # (a) Decide the number of samples to be saved
         num_sample_per_task = self.memory_size // self.task_count
         num_sample_per_task = min(len(train_loader.dataset), num_sample_per_task)
@@ -588,11 +591,11 @@ class iCARL(NormalNN):
         return loss.detach()
     
     
-    def learn_stream(self, train_loader):
+    def learn_stream(self, train_loader, new_task=True):
         
         # if no classes have been seen yet, learn normally
         if self.seen_classes == 0:
-            super(iCARL, self).learn_stream(train_loader)
+            super(iCARL, self).learn_stream(train_loader, new_task)
             
         # else replay
         else:
