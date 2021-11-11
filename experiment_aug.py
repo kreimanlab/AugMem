@@ -8,6 +8,7 @@ import pandas as pd
 from dataloaders import datasets
 from torchvision import transforms
 import agents
+import psutil
 
 
 def get_out_path(args):
@@ -80,7 +81,8 @@ def run(args, run):
         'replay_times':args.replay_times,
         'ntask':len(tasks),
         'mem_focus_beta':args.mem_sparse,
-        'logit_coef':args.logit_coef
+        'logit_coef':args.logit_coef,
+        'visualize':args.visualize
         }
 
     if args.dataset == "core50":
@@ -167,6 +169,10 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         else:
             n_epoch = args.n_epoch
         for epoch in range(n_epoch):
+
+            process = psutil.Process(os.getpid())
+            print("MEMORY USAGE: ")
+            print(process.memory_info().rss)
 
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
