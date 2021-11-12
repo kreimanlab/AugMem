@@ -199,7 +199,7 @@ class AugMem(nn.Module):
             
             # convert to tensor for training
             ReplayStorage = torch.stack(ReplayAttRead)
-            ReplayAttRead = ReplayStorage[:,:64*13*13*self.MemtopK]
+            ReplayAttRead = ReplayStorage[:, :int(512/self.MemFeatSz)*13*13*self.MemtopK]
             ReplayAttRead = ReplayAttRead.long()
             #ReplayAttMem = ReplayStorage[:,64*13*13*self.MemtopK:-self.config['n_class']].reshape(len(replay_labels), self.MemNumSlots, self.MemFeatSz)  
             ReplayAttMem = self.memory
@@ -250,7 +250,7 @@ class AugMem(nn.Module):
             # we store/update our storage Reading Attention
             direct, out, att_read, read, extracted = self.forward(inputs)
             #att_read = extracted.detach().view(inputs.size(0),-1)
-            att_read = att_read.detach().cpu().view(-1,13,13,64,self.MemNumSlots)
+            att_read = att_read.detach().cpu().view(-1, 13, 13, int(512/self.MemFeatSz), self.MemNumSlots)
             #print(att_read.shape)
             #find top retireved memory address
             att_read_ind = torch.argsort(att_read, dim=4, descending=True)
@@ -281,9 +281,9 @@ class AugMem(nn.Module):
         for cls in range(self.config['n_class']):
             if cls in self.StorageAttRead.keys():
                 #print(self.StorageAttRead[cls][:,:13*13*64*self.MemtopK].shape)
-                sz_w = self.StorageAttRead[cls][:,:13*13*64*self.MemtopK].size(0)
-                sz_h = self.StorageAttRead[cls][:,:13*13*64*self.MemtopK].size(1)
-                indices = torch.reshape(self.StorageAttRead[cls][:,:13*13*64*self.MemtopK], (sz_w, sz_h)).long()
+                sz_w = self.StorageAttRead[cls][:,:13*13*int(512/self.MemFeatSz)*self.MemtopK].size(0)
+                sz_h = self.StorageAttRead[cls][:,:13*13*int(512/self.MemFeatSz)*self.MemtopK].size(1)
+                indices = torch.reshape(self.StorageAttRead[cls][:, :13*13*int(512/self.MemFeatSz)*self.MemtopK], (sz_w, sz_h)).long()
                 #print(indices.shape)
                 #print(torch.max(indices))
                 self.ListUsedMem[indices] = 1
@@ -334,11 +334,11 @@ class AugMem(nn.Module):
 
                     if len(self.viz_read_att[label]) < self.viz_NumEgs:
                         #view(-1,13,13,64,100) as shape for attention read
-                        att_read_bat = att_read[bat,:].view(1,13,13,64,self.MemNumSlots)
+                        att_read_bat = att_read[bat,:].view(1, 13, 13, int(512/self.MemFeatSz), self.MemNumSlots)
                         #find top retireved memory address
                         att_read_ind = torch.argsort(att_read_bat, dim=4, descending=True)
                         att_read_ind = att_read_ind[:,:,:,:,0:self.MemtopK]
-                        att_read_bat = att_read_ind.view(1,13,13,64,self.MemtopK)
+                        att_read_bat = att_read_ind.view(1, 13, 13, int(512/self.MemFeatSz), self.MemtopK)
                         att_read_np = att_read_bat.numpy()
                         self.viz_read_att[label].append(att_read_np)
                         self.viz_direct[label].append(direct_vec.detach().cpu().numpy())
