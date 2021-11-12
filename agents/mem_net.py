@@ -71,6 +71,8 @@ class Net(nn.Module):
         x = x.permute(0,2,3,1)
         #print(x.shape)
         x = x.view(-1,13,13,64,8) #dim=4
+        print(x.size())
+        print(self.memory.size())
         #print(x.shape)
         #self.memory = self.sigmoid(self.memory)
         att_read = self._similarity(x, self.focus_beta, self.memory)
