@@ -17,7 +17,7 @@ class Net(nn.Module):
         self.batch_size = 32 #will be overwritten later        
         
         self.compressedChannel = 512
-        self.memsize = MemFeatSz
+        self.memfeat = MemFeatSz
         self.memslots = MemNumSlots
         self.origsz = 13
         self.cutlayer = 12
@@ -43,9 +43,9 @@ class Net(nn.Module):
                                         torch.nn.Flatten())
         
         #print(self.block)
-        #self.memory = nn.Linear(self.memsize, self.memsize, False)
-        self.memory = Parameter(torch.randn(MemNumSlots, self.memsize))
-        #self.memoryD = Parameter(torch.randn(MemNumSlots, self.memsize))
+        #self.memory = nn.Linear(self.memfeat, self.memfeat, False)
+        self.memory = Parameter(torch.randn(MemNumSlots, self.memfeat))
+        #self.memoryD = Parameter(torch.randn(MemNumSlots, self.memfeat))
         if self.config['freeze_memory']:
             self.memory.requires_grad = False
             #self.memoryD.requires_grad = False
@@ -67,26 +67,19 @@ class Net(nn.Module):
 
         print("extracted: " + str(extracted.size()))
 
-        x = extracted.view(-1,512,13,13) #dim=3
+        x = extracted.view(-1, 512, 13, 13)  # dim=3
 
-        print(x.size())
+        x = x.permute(0, 2, 3, 1)
 
-        #print(x.shape)
-        x = x.permute(0,2,3,1)
+        assert 512 % self.memfeat == 0, "Parameter memory_Nfeat must be a factor of 512"
+        x = x.view(-1, 13, 13, 512/self.memfeat, self.memfeat)  # dim=4 (Morgan: I think it's 5-dimensional)
 
-        print(x.size())
-        print("----------")
-        #print(x.shape)
-        x = x.view(-1,13,13,64,8) #dim=4
-        print(x.size())
-        print(self.memory.size())
-        #print(x.shape)
-        #self.memory = self.sigmoid(self.memory)
+        # self.memory = self.sigmoid(self.memory)
         att_read = self._similarity(x, self.focus_beta, self.memory)
         att_read = self._sharpen(att_read, self.sharp_gamma)        
-        #att_read = self.sigmoid(att_read-1)
-        #print(att_read[0,0,:])
-        #read = F.linear(att_read, self.memory)
+        # att_read = self.sigmoid(att_read-1)
+        # print(att_read[0,0,:])
+        # read = F.linear(att_read, self.memory)
         read = att_read.matmul(self.memory)
         
         read = read.view(-1,13,13,64*8).permute(0,3,1,2)
