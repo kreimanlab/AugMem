@@ -72,7 +72,7 @@ class Net(nn.Module):
         x = x.permute(0, 2, 3, 1)
 
         assert 512 % self.memfeat == 0, "Parameter memory_Nfeat must be a factor of 512"
-        x = x.view(-1, 13, 13, 512/self.memfeat, self.memfeat)  # dim=4 (Morgan: I think it's 5-dimensional)
+        x = x.view(-1, 13, 13, int(512/self.memfeat), self.memfeat)  # dim=4 (Morgan: I think it's 5-dimensional)
 
         # self.memory = self.sigmoid(self.memory)
         att_read = self._similarity(x, self.focus_beta, self.memory)
