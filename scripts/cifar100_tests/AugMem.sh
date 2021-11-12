@@ -25,8 +25,8 @@ else
 fi
 
 DATAROOT=${8:-${DDATAROOT}}
+OUTDIR=${9:-augmem_gridsearch_cifar100}
 
-OUTDIR=augmem_gridsearch_cifar100
 custom_folder="AugMem_lr_${lr}_memsparse_${mem_sparse}_memNslots_${memory_Nslots}_memNfeat_${memory_Nfeat}_memsize_${memory_size}"
 mkdir -p ${OUTDIR}/class_iid/${custom_folder}
 mkdir -p plots
