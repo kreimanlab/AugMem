@@ -164,6 +164,8 @@ class AugMem(nn.Module):
     def criterion_regularize(self, memory):
         #print(self.ListUsedMem)
         if self.gpu:
+            print(memory.size())
+            print(self.memory.size())
             diff = (memory - self.memory.cuda())**2
             ListUsedMem = self.ListUsedMem.clone().cuda()
         else:
