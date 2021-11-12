@@ -65,10 +65,17 @@ class Net(nn.Module):
         #print(extracted.shape)
         #x = extracted.view(-1,512,13,1,13).repeat(1,1,1,self.memslots,1)
 
+        print("extracted: " + str(extracted.size()))
+
         x = extracted.view(-1,512,13,13) #dim=3
+
+        print(x.size())
 
         #print(x.shape)
         x = x.permute(0,2,3,1)
+
+        print(x.size())
+        print("----------")
         #print(x.shape)
         x = x.view(-1,13,13,64,8) #dim=4
         print(x.size())
