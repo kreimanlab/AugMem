@@ -17,7 +17,7 @@ class Net(nn.Module):
         self.batch_size = 32 #will be overwritten later        
         
         self.compressedChannel = 512
-        self.memsize = 8
+        self.memsize = MemFeatSz
         self.memslots = MemNumSlots
         self.origsz = 13
         self.cutlayer = 12
