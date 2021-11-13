@@ -164,12 +164,12 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         "mem": {
             "test_all": {"all_epochs": [], "best_epochs": []},
             "test_1st": {"all_epochs": [], "best_epochs": []},
-            "val_all": {"best_epochs": []}
+            "val_all": {"all_epochs": [], "best_epochs": []}
         },
         "direct": {
             "test_all": {"all_epochs": [], "best_epochs": []},
             "test_1st": {"all_epochs": [], "best_epochs": []},
-            "val_all": {"best_epochs": []}
+            "val_all": {"all_epochs": [], "best_epochs": []}
         }
     }
 
