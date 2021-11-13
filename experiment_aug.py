@@ -341,7 +341,7 @@ def get_args(argv):
     parser.add_argument('--mem_sparse', type=float, default=5, help="The number of times to replay per batch. ")
 
     # for augmented memory model
-    parser.add_argument('--memory_topK', type=int, default=1, help="Number of memory slots to keep in memory")
+    parser.add_argument('--memory_topK', type=int, default=10, help="Number of memory slots to keep in memory")
     parser.add_argument('--memory_Nslots', type=int, default=100, help="Number of memory slots to keep in memory")
     parser.add_argument('--memory_Nfeat', type=int, default=512, help="Feature dim per memory slot to keep in memory")
     parser.add_argument('--visualize', default=False, action='store_true', dest='visualize',
