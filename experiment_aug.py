@@ -252,7 +252,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                             task_test_data_1st, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
 
             # learn
-            #agent.learn_stream(train_loader, task)
+            agent.learn_stream(train_loader, task)
 
             # validate if applicable
             if args.validate:
@@ -264,10 +264,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 all_accs["direct"]["val_all"]["all_epochs"][task].append(val_acc_direct)
                 all_accs["mem"]["val_all"]["all_epochs"][task].append(val_acc_mem)
 
-            #test_acc_mem, test_acc_direct, test_time = agent.validation(test_loader)
-            test_acc_mem = random.random()
-            test_acc_direct = random.random()
-            test_time = 1
+            test_acc_mem, test_acc_direct, test_time = agent.validation(test_loader)
             print(' * Test Acc: A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
                 test_acc_out=test_acc_mem, test_acc_direct=test_acc_direct, time=test_time))
             # test_accs_all_epochs[task].append(test_acc_direct)
@@ -275,14 +272,9 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             all_accs["direct"]["test_all"]["all_epochs"][task].append(test_acc_direct)
             all_accs["mem"]["test_all"]["all_epochs"][task].append(test_acc_mem)
 
-
-            #test_acc_mem_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
-            test_acc_mem_1st = random.random()
-            test_acc_direct_1st = random.random()
-            test_time_1st = 1
-            print(
-                ' * Test Acc (1st task): A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
-                    test_acc_out=test_acc_mem_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
+            test_acc_mem_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
+            print(' * Test Acc (1st task): A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
+                test_acc_out=test_acc_mem_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
             # test_accs_1st_all_epochs[task].append(test_acc_direct_1st)
             # test_accs_mem_1st_all_epochs[task].append(test_acc_out_1st)
             all_accs["direct"]["test_1st"]["all_epochs"][task].append(test_acc_direct_1st)
