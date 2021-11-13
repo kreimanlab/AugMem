@@ -412,17 +412,18 @@ class AugMem(nn.Module):
             #update augmented memory
             self.memory = self.net.memory.clone().detach().cpu()        
             backward_time.update(backward_timer.toc())
-            
-            ## REPLAY read content from classes not belonging to target labels from memory
-            for time in range(self.config['replay_times']):
-                replay_size, replay_loss = self.criterion_replay(target)
-            #replay_size = 0
-            #replay_loss = None
-            if self.config['replay_times']>0 and replay_size > 0:
-                losses_replay.update(replay_loss, replay_size)
-            else:
-                replay_size = 0
-                replay_loss = None
+
+            if task > 0:
+                ## REPLAY read content from classes not belonging to target labels from memory
+                for time in range(self.config['replay_times']):
+                    replay_size, replay_loss = self.criterion_replay(target)
+                #replay_size = 0
+                #replay_loss = None
+                if self.config['replay_times'] > 0 and replay_size > 0:
+                    losses_replay.update(replay_loss, replay_size)
+                else:
+                    replay_size = 0
+                    replay_loss = None
                 
             ## UPDATE storage of reading attention
             #self.updateStorage_batch(inputs, target)
