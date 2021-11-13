@@ -476,10 +476,13 @@ def main():
         all_accs = run(args, r)
 
         # save accs for all epochs on this run
+        p = os.path.join(total_path, "all_epochs")
+        if not os.path.exists(p):
+            os.makedirs(p)
         for acc_type in ["mem", "direct"]:
             for tasks_tested in ["test_all", "test_1st", "val_all"]:
                 df = pd.DataFrame(all_accs[acc_type][tasks_tested]["all_epochs"])
-                df.to_csv(os.path.join(total_path, tasks_tested + "_" + acc_type + '_all_epochs_run' + str(r) + ".csv"), index=False, header=False)
+                df.to_csv(os.path.join(p, tasks_tested + "_" + acc_type + '_all_epochs_run' + str(r) + ".csv"), index=False, header=False)
 
         all_accs_all_runs.append(all_accs)
 
