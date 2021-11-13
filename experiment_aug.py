@@ -261,8 +261,8 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                     val_acc_out=val_acc_mem, val_acc_direct=val_acc_direct, time=val_time))
                 # val_accs_all_epochs[task].append(val_acc_direct)
                 # val_accs_mem_all_epochs[task].append(val_acc_out)
-                all_accs["direct"]["val_all"]["all_epochs"].append(val_acc_direct)
-                all_accs["mem"]["val_all"]["all_epochs"].append(val_acc_mem)
+                all_accs["direct"]["val_all"]["all_epochs"][task].append(val_acc_direct)
+                all_accs["mem"]["val_all"]["all_epochs"][task].append(val_acc_mem)
 
             #test_acc_mem, test_acc_direct, test_time = agent.validation(test_loader)
             test_acc_mem = random.random()
@@ -272,8 +272,8 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 test_acc_out=test_acc_mem, test_acc_direct=test_acc_direct, time=test_time))
             # test_accs_all_epochs[task].append(test_acc_direct)
             # test_accs_mem_all_epochs[task].append(test_acc_out)
-            all_accs["direct"]["test_all"]["all_epochs"].append(test_acc_direct)
-            all_accs["mem"]["test_all"]["all_epochs"].append(test_acc_mem)
+            all_accs["direct"]["test_all"]["all_epochs"][task].append(test_acc_direct)
+            all_accs["mem"]["test_all"]["all_epochs"][task].append(test_acc_mem)
 
 
             #test_acc_mem_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
@@ -285,8 +285,8 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                     test_acc_out=test_acc_mem_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
             # test_accs_1st_all_epochs[task].append(test_acc_direct_1st)
             # test_accs_mem_1st_all_epochs[task].append(test_acc_out_1st)
-            all_accs["direct"]["test_1st"]["all_epochs"].append(test_acc_direct_1st)
-            all_accs["mem"]["test_1st"]["all_epochs"].append(test_acc_mem_1st)
+            all_accs["direct"]["test_1st"]["all_epochs"][task].append(test_acc_direct_1st)
+            all_accs["mem"]["test_1st"]["all_epochs"][task].append(test_acc_mem_1st)
 
             if args.visualize:
                 attread_filename = 'visualization/' + args.scenario + '/' + args.scenario + '_run_' + str(run) + '_task_' + str(task) + '_epoch_' + str(epoch)
@@ -486,7 +486,6 @@ def main():
         # save accs for all epochs on this run
         for acc_type in ["mem", "direct"]:
             for tasks_tested in ["test_all", "test_1st", "val_all"]:
-                print(all_accs[acc_type][tasks_tested]["all_epochs"])
                 df = pd.DataFrame(all_accs[acc_type][tasks_tested]["all_epochs"])
                 df.to_csv(os.path.join(total_path, tasks_tested + "_" + acc_type + '_all_epochs_run' + str(r) + ".csv"), index=False, header=False)
 
