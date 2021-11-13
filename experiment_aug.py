@@ -252,7 +252,7 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                             task_test_data_1st, batch_size=args.batch_size, shuffle=False, num_workers = args.n_workers, pin_memory=True)
 
             # learn
-            agent.learn_stream(train_loader, task)
+            #agent.learn_stream(train_loader, task)
 
             # validate if applicable
             if args.validate:
@@ -264,7 +264,10 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 all_accs["direct"]["val_all"]["all_epochs"].append(val_acc_direct)
                 all_accs["mem"]["val_all"]["all_epochs"].append(val_acc_mem)
 
-            test_acc_mem, test_acc_direct, test_time = agent.validation(test_loader)
+            #test_acc_mem, test_acc_direct, test_time = agent.validation(test_loader)
+            test_acc_mem = random.random()
+            test_acc_direct = random.random()
+            test_time = 1
             print(' * Test Acc: A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
                 test_acc_out=test_acc_mem, test_acc_direct=test_acc_direct, time=test_time))
             # test_accs_all_epochs[task].append(test_acc_direct)
@@ -273,7 +276,10 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
             all_accs["mem"]["test_all"]["all_epochs"].append(test_acc_mem)
 
 
-            test_acc_mem_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
+            #test_acc_mem_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
+            test_acc_mem_1st = random.random()
+            test_acc_direct_1st = random.random()
+            test_time_1st = 1
             print(
                 ' * Test Acc (1st task): A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
                     test_acc_out=test_acc_mem_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
@@ -480,7 +486,7 @@ def main():
         # save accs for all epochs on this run
         for acc_type in ["mem", "direct"]:
             for tasks_tested in ["test_all", "test_1st", "val_all"]:
-                df = pd.DataFrame(all_accs[acc_type][tasks_tested]["all_epochs"][r])
+                df = pd.DataFrame(all_accs[acc_type][tasks_tested]["all_epochs"])
                 df.to_csv(os.path.join(total_path, tasks_tested + "_" + acc_type + '_all_epochs_run' + str(r) + ".csv"), index=False, header=False)
 
         all_accs_all_runs.append(all_accs)
@@ -497,7 +503,7 @@ def main():
     # converting list of list of testing accuracies for each run to a dataframe and saving
     for acc_type in ["mem", "direct"]:
         for tasks_tested in ["test_all", "test_1st", "val_all"]:
-            best_accs_across_runs = [all_accs_all_runs[r][acc_type][tasks_tested]["best_epochs"] for r in all_accs]
+            best_accs_across_runs = [all_accs_1run[acc_type][tasks_tested]["best_epochs"] for all_accs_1run in all_accs_all_runs]
             df = pd.DataFrame(best_accs_across_runs)
             df.to_csv(os.path.join(total_path, tasks_tested + "_" + acc_type + "_all_runs.csv"), index=False, header=False)
 
