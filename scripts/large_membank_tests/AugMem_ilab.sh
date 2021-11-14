@@ -25,12 +25,12 @@ mkdir -p $OUTDIR/class_instance/AugMem_ResNet18/
 
 #--visualize
 #--mem_sparse 1
-python -u experiment_aug.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT --lr 0.00001 --replay_coef 5 --output_dir $OUTDIR  --mem_sparse 1 --n_epoch_first_task 1 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 1000  --memory_Nfeat 128 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 20 --n_workers 8 | tee ${OUTDIR}/class_iid/AugMem_ResNet18/log.log    #&
+python -u experiment_aug.py --scenario class_iid --dataset $DATASET --dataroot $DATAROOT --lr 0.00001 --replay_coef 5 --output_dir $OUTDIR  --mem_sparse 1 --n_epoch_first_task 10 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 20 --n_workers 8 | tee ${OUTDIR}/class_iid/AugMem_ResNet18/log.log    #&
 # TODO: change above to n_runs 10
 #--freeze_feature_extract
 #--visualize
 
-#python -u experiment_aug.py --scenario class_instance --dataset $DATASET --dataroot $DATAROOT --freeze_feature_extract --lr 0.00001 --mem_sparse 1 --first_times 1 --output_dir $OUTDIR --replay_coef 5 --replay_times 1 --memory_size 200 --reg_coef 1000 --n_epoch 1 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 20 --n_workers 8 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/log.log    #&
+#python -u experiment_aug.py --scenario class_instance --dataset $DATASET --dataroot $DATAROOT --lr 0.00001 --mem_sparse 1 --n_epoch_first_task 10 --output_dir $OUTDIR --replay_coef 5 --replay_times 1 --memory_size 200 --freeze_feature_extract --reg_coef 1000 --n_epoch 1 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 20 --n_workers 8 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/log.log    #&
 
 ########### normal ###########
 
