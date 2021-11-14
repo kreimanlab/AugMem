@@ -47,12 +47,24 @@ def main():
             if args.task1:
                 raise ValueError("Cannot plot task1 accuracy results for validation set - data not available")
             else:
-                result = pd.read_csv(os.path.join(path, 'val.csv'), header = None)
+                try:
+                    result = pd.read_csv(os.path.join(path, 'val_all_mem_all_runs.csv'), header = None)
+                except FileNotFoundError:
+                    # default to old naming scheme
+                    result = pd.read_csv(os.path.join(path, 'val_task1.csv'), header = None)
         else:
             if args.task1:
-                result = pd.read_csv(os.path.join(path, 'test_task1.csv'), header=None)
+                try:
+                    result = pd.read_csv(os.path.join(path, 'test_1st_mem_all_runs.csv'), header=None)
+                except FileNotFoundError:
+                    # default to old naming scheme
+                    result = pd.read_csv(os.path.join(path, 'test_task1.csv'), header=None)
             else:
-                result = pd.read_csv(os.path.join(path, 'test.csv'), header=None)
+                try:
+                    result = pd.read_csv(os.path.join(path, 'test_all_mem_all_runs.csv'), header=None)
+                except FileNotFoundError:
+                    # default to old naming scheme
+                    result = pd.read_csv(os.path.join(path, 'test.csv'), header=None)
         hyperparams = pd.read_csv(os.path.join(path, 'hyperparams.csv'), header = None, error_bad_lines=False, index_col=0)
 
         x = result.columns
