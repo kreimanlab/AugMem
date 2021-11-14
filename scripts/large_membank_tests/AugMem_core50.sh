@@ -7,7 +7,7 @@ OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
 
 if [ "$DATASET" = "core50" ]; then
-    DATAROOT="/media/data/Datasets/Core50/core50_128x128"
+    DATAROOT="/media/data/Datasets/Core50"
 elif [ "$DATASET" = "toybox" ]; then
     DATAROOT="/media/data/morgan_data/toybox/images"
 elif [ "$DATASET" = "ilab2mlight" ]; then
