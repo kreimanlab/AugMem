@@ -7,7 +7,7 @@ OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
 
 if [ "$DATASET" = "core50" ]; then
-    DATAROOT="./data/core50_128x128"
+    DATAROOT="/media/data/Datasets/Core50/core50_128x128"
 elif [ "$DATASET" = "toybox" ]; then
     DATAROOT="/media/data/morgan_data/toybox/images"
 elif [ "$DATASET" = "ilab2mlight" ]; then
@@ -34,8 +34,8 @@ mkdir -p $OUTDIR/class_instance/AugMem_ResNet18/
 #--visualize
 #python -u experiment.py --scenario iid --reg_coef 1000 --output_dir outputs_rohil --n_epoch 1 --memory_size 200 --freeze_feature_extract --n_runs 10 --model_type resnet --memory_size 200 --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 0 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/iid/AugMem_ResNet18/log.log	#&
 
-#python -u experiment.py --scenario instance --reg_coef 1000 --output_dir outputs_rohil --n_epoch 1 --memory_size 200 --model_weights ./pretrain/cifar --freeze_feature_extract --memory_size 200 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 0 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/instance/AugMem_ResNet18/log.log    #&  
-    
+#python -u experiment.py --scenario instance --reg_coef 1000 --output_dir outputs_rohil --n_epoch 1 --memory_size 200 --model_weights ./pretrain/cifar --freeze_feature_extract --memory_size 200 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 0 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/instance/AugMem_ResNet18/log.log    #&
+
 #--visualize
 #enable this flag to visualize hypothesis and tsne plots
 python -u experiment_aug.py --scenario class_iid --replay_coef 5 --dataset $DATASET --dataroot $DATAROOT  --output_dir $OUTDIR  --first_times 1 --replay_times 1 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 1000  --memory_Nfeat 128 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_iid/AugMem_ResNet18/log.log    #&
