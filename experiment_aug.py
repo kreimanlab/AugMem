@@ -8,7 +8,6 @@ import pandas as pd
 from dataloaders import datasets
 from torchvision import transforms
 import agents
-import psutil
 
 
 def get_out_path(args):
@@ -124,10 +123,8 @@ def run(args, run):
     else:
         val_data = None
 
-    #test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs = train(agent, composed, args, run, tasks, active_out_nodes, test_data, val_data)
     all_accs = train(agent, composed, args, run, tasks, active_out_nodes, test_data, val_data)
 
-    #return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs
     return all_accs
 
 
@@ -140,25 +137,6 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
 
     # number of tasks
     ntask = len(tasks)
-
-    # # to store test accuracies
-    # test_accs = []
-    # test_accs_1st = []
-    #
-    # test_accs_mem = []
-    # test_accs_mem_1st = []
-    #
-    # # to store val accuracies
-    # val_accs = []
-    # val_accs_mem = []
-    #
-    # test_accs_all_epochs = []
-    # test_accs_1st_all_epochs = []
-    # val_accs_all_epochs = []
-    #
-    # test_accs_mem_all_epochs = []
-    # test_accs_mem_1st_all_epochs = []
-    # val_accs_mem_all_epochs = []
 
     all_accs = {
         "mem": {
@@ -183,14 +161,6 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         print('Active output nodes for this task: ')
         print(agent.active_out_nodes)
 
-        # test_accs_all_epochs.append([])
-        # test_accs_1st_all_epochs.append([])
-        # val_accs_all_epochs.append([])
-        #
-        # test_accs_mem_all_epochs.append([])
-        # test_accs_mem_1st_all_epochs.append([])
-        # val_accs_mem_all_epochs.append([])
-
         all_accs["direct"]["test_all"]["all_epochs"].append([])
         all_accs["direct"]["test_1st"]["all_epochs"].append([])
         all_accs["direct"]["val_all"]["all_epochs"].append([])
@@ -203,10 +173,6 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         else:
             n_epoch = args.n_epoch
         for epoch in range(n_epoch):
-
-            process = psutil.Process(os.getpid())
-            print("MEMORY USAGE: ")
-            print(process.memory_info().rss)
 
             print('===' + args.agent_name + '; Epoch ' + str(epoch) + '; RUN ' + str(run) + '; TASK ' + str(task))
 
@@ -259,24 +225,18 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
                 val_acc_mem, val_acc_direct, val_time = agent.validation(val_loader)
                 print(' * Val Acc: A-out {val_acc_out:.3f}, A-direct {val_acc_direct:.3f}, Time: {time:.2f}'.format(
                     val_acc_out=val_acc_mem, val_acc_direct=val_acc_direct, time=val_time))
-                # val_accs_all_epochs[task].append(val_acc_direct)
-                # val_accs_mem_all_epochs[task].append(val_acc_out)
                 all_accs["direct"]["val_all"]["all_epochs"][task].append(val_acc_direct)
                 all_accs["mem"]["val_all"]["all_epochs"][task].append(val_acc_mem)
 
             test_acc_mem, test_acc_direct, test_time = agent.validation(test_loader)
             print(' * Test Acc: A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
                 test_acc_out=test_acc_mem, test_acc_direct=test_acc_direct, time=test_time))
-            # test_accs_all_epochs[task].append(test_acc_direct)
-            # test_accs_mem_all_epochs[task].append(test_acc_out)
             all_accs["direct"]["test_all"]["all_epochs"][task].append(test_acc_direct)
             all_accs["mem"]["test_all"]["all_epochs"][task].append(test_acc_mem)
 
             test_acc_mem_1st, test_acc_direct_1st, test_time_1st = agent.validation(test_loader_1st)
             print(' * Test Acc (1st task): A-out {test_acc_out:.3f}, A-direct {test_acc_direct:.3f}, Time: {time:.2f}'.format(
                 test_acc_out=test_acc_mem_1st, test_acc_direct=test_acc_direct_1st, time=test_time_1st))
-            # test_accs_1st_all_epochs[task].append(test_acc_direct_1st)
-            # test_accs_mem_1st_all_epochs[task].append(test_acc_out_1st)
             all_accs["direct"]["test_1st"]["all_epochs"][task].append(test_acc_direct_1st)
             all_accs["mem"]["test_1st"]["all_epochs"][task].append(test_acc_mem_1st)
 
@@ -328,22 +288,15 @@ def train(agent, transforms, args, run, tasks, active_out_nodes, test_data, val_
         # after all the epochs, store test_acc
         all_accs["direct"]["test_all"]["best_epochs"].append(test_acc_direct)
         all_accs["direct"]["test_1st"]["best_epochs"].append(test_acc_direct_1st)
-        # test_accs.append(test_acc_direct)
-        # test_accs_1st.append(test_acc_direct_1st)
 
         all_accs["mem"]["test_all"]["best_epochs"].append(test_acc_mem)
         all_accs["mem"]["test_1st"]["best_epochs"].append(test_acc_mem_1st)
-        # test_accs_mem.append(test_acc_mem)
-        # test_accs_mem_1st.append(test_acc_mem_1st)
 
         # same with val acc
         if val_data is not None:
             all_accs["direct"]["val_all"]["best_epochs"].append(val_acc_direct)
             all_accs["mem"]["val_all"]["best_epochs"].append(val_acc_mem)
-            # val_accs.append(val_acc_direct)
-            # val_accs_mem.append(val_acc_out)
 
-    #return test_accs_1st, test_accs, val_accs, test_accs_all_epochs, test_accs_1st_all_epochs, test_accs_mem_1st, test_accs_mem, val_accs_mem, test_accs_mem_all_epochs, test_accs_mem_1st_all_epochs
     return all_accs
 
 def get_args(argv):
@@ -460,18 +413,10 @@ def main():
     np.random.seed(0)
     random.seed(0)
 
-    # test_accs = []
-    # test_accs_1st = []
-    # val_accs = []
-    #
-    # test_accs_all_epochs = []
-    # test_accs_1st_all_epochs = []
-
     all_accs_all_runs = []
     # iterate over runs
-    for r in [6]: #range(args.n_runs):
+    for r in range(args.n_runs):
         print('=============Stream Learning Run ' + str(r) + '=============')
-        #test_acc_1st, test_acc, val_acc, test_acc_all_epochs, test_acc_1st_all_epochs = run(args, r)
 
         all_accs = run(args, r)
 
@@ -486,52 +431,12 @@ def main():
 
         all_accs_all_runs.append(all_accs)
 
-        # test_accs_direct.append(test_acc)
-        # test_accs_direct.append(all_accs["direct"]["test_all_tasks"])
-        #
-        # test_accs_direct_1st.append(test_acc_1st)
-        # val_accs_direct.append(val_acc)
-        #
-        # test_accs_direct_all_epochs.append(test_acc_all_epochs)
-        # test_accs_direct_1st_all_epochs.append(test_acc_1st_all_epochs)
-
     # converting list of list of testing accuracies for each run to a dataframe and saving
     for acc_type in ["mem", "direct"]:
         for tasks_tested in ["test_all", "test_1st", "val_all"]:
             best_accs_across_runs = [all_accs_1run[acc_type][tasks_tested]["best_epochs"] for all_accs_1run in all_accs_all_runs]
             df = pd.DataFrame(best_accs_across_runs)
             df.to_csv(os.path.join(total_path, tasks_tested + "_" + acc_type + "_all_runs.csv"), index=False, header=False)
-
-    # test_df = pd.DataFrame(test_accs)
-    # test_df_1st = pd.DataFrame(test_accs_1st)
-    # val_df = pd.DataFrame(val_accs)
-    # test_all_epochs_dfs = [pd.DataFrame(accs) for accs in test_accs_all_epochs]
-    # test_1st_all_epochs_dfs = [pd.DataFrame(accs) for accs in test_accs_1st_all_epochs]
-
-    # # printing test acc dataframe
-    # print("testing accuracies")
-    # print(test_df)
-
-    # print("testing accuracies --- 1st task")
-    # print(test_df_1st)
-    #
-    # # printing val_acc dataframe
-    # print("validation accuracies")
-    # print(val_df)
-
-    # # writing testing accuracy to csv
-    # test_df_1st.to_csv(os.path.join(total_path,'test_task1.csv'), index=False, header=False)
-    # test_df.to_csv(os.path.join(total_path,'test.csv'), index=False, header=False)
-    #
-    # # writing validation accuracy to csv, will be empty if no validation is performed
-    # val_df.to_csv(os.path.join(total_path,'val.csv'), index=False, header=False)
-
-    # # writing testing accuracies across all epochs to cvs
-    # for nrun, df in enumerate(test_all_epochs_dfs):
-    #     df.to_csv(os.path.join(total_path, 'test_all_epochs_run' + str(nrun) + '.csv'), index=False, header=False)
-    #
-    # for nrun, df in enumerate(test_1st_all_epochs_dfs):
-    #     df.to_csv(os.path.join(total_path, 'test_task1_all_epochs_run' + str(nrun) + '.csv'), index=False, header=False)
 
 
 if __name__ == '__main__':
