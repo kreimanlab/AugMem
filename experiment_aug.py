@@ -19,6 +19,12 @@ def get_out_path(args):
     else:
         subdir = args.custom_folder
 
+    if args.specific_runs is not None:
+        rundir = "runs"
+        for r in args.specific_runs:
+            rundir = rundir + "-" + str(r)
+        subdir = os.path.join(subdir, rundir)
+
     total_path = os.path.join(args.output_dir, args.scenario, subdir)
 
     # make output directory if it doesn't already exist
@@ -315,6 +321,7 @@ def get_args(argv):
                         help="How to set up tasks, e.g. iid => randomly assign data to each task")
     parser.add_argument('--n_runs', type=int, default=1,
                         help="Number of times to repeat the experiment with different data orderings")
+    parser.add_argument('--specific_runs', nargs='+', default=None, help='Do specific runs (data orderings) instead of the first n runs. Overrides the --n_runs parameter. Use like --specific_runs 1 3 5')
 
     # model hyperparameters/type
     parser.add_argument('--model_type', type=str, default='resnet',
@@ -415,7 +422,13 @@ def main():
 
     all_accs_all_runs = []
     # iterate over runs
-    for r in range(args.n_runs):
+
+    if args.specific_runs is None:
+        runs = range(args.n_runs)
+    else:
+        runs = [int(r) for r in args.specific_runs]
+
+    for r in runs:
         print('=============Stream Learning Run ' + str(r) + '=============')
 
         all_accs = run(args, r)
