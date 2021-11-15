@@ -9,7 +9,7 @@ GPU="${2:-0}"
 if [ "$DATASET" = "core50" ]; then
     DATAROOT="/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50"
 elif [ "$DATASET" = "toybox" ]; then
-    DATAROOT="./media/data/morgan_data/toybox/images"
+    DATAROOT="/media/data/morgan_data/toybox/images"
 elif [ "$DATASET" = "ilab2mlight" ]; then
     DATAROOT="/media/data/Datasets/ilab2M/iLab-2M-Light"
 else
