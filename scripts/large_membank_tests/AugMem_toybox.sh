@@ -5,7 +5,7 @@
 RUN=0
 
 DATASET="${1:-"core50"}"
-OUTDIR="${DATASET}_outputs_largemem_splitruns"
+OUTDIR="${DATASET}_outputs_largemem_highlr_splitruns"
 GPU="${2:-0}"
 
 if [ "$DATASET" = "core50" ]; then
@@ -33,7 +33,7 @@ mkdir -p "$OUTDIR/class_instance/AugMem_ResNet18/runs-${RUN}"
 # TODO: change above to n_runs 10
 #--freeze_feature_extract
 #--visualize
-python -u experiment_aug.py --specific_runs ${RUN} --scenario class_instance --dataset $DATASET --dataroot $DATAROOT --lr 0.0001 --logit_coef 1 --n_epoch_first_task 10 --output_dir $OUTDIR --replay_coef 5 --freeze_feature_extract --replay_times 1 --memory_size 200 --reg_coef 1000 --n_epoch 1 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 1000  --memory_Nfeat 128 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 20 --n_workers 20 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/runs-${RUN}/log.log   #&
+python -u experiment_aug.py --specific_runs ${RUN} --scenario class_instance --dataset $DATASET --dataroot $DATAROOT --lr 0.001 --logit_coef 1 --n_epoch_first_task 10 --output_dir $OUTDIR --replay_coef 5 --freeze_feature_extract --replay_times 1 --memory_size 200 --reg_coef 1000 --n_epoch 1 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 1000  --memory_Nfeat 128 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 20 --n_workers 20 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/runs-${RUN}/log.log   #&
 
 ########### normal #########
 
