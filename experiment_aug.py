@@ -22,7 +22,7 @@ def get_out_path(args):
     if args.specific_runs is not None:
         rundir = "runs"
         for r in args.specific_runs:
-            rundir = rundir + "-" + str(r)
+            rundir = rundir + " " + str(r)
         subdir = os.path.join(subdir, rundir)
 
     total_path = os.path.join(args.output_dir, args.scenario, subdir)
