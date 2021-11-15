@@ -2,7 +2,7 @@
 # Param #2: GPU ID. Default is 0
 # ./scripts/AugMem_toybox.sh toybox 1
 
-RUN="0 1"
+RUN=0
 
 DATASET="${1:-"core50"}"
 OUTDIR="${DATASET}_outputs_largemem_splitruns"
