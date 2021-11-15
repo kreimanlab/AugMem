@@ -5,7 +5,7 @@
 RUN=0
 
 DATASET="${1:-"core50"}"
-OUTDIR="${DATASET}_outputs_largemem_highlr_splitruns"
+OUTDIR="${DATASET}_outputs_largemem_splitruns"
 GPU="${2:-0}"
 
 if [ "$DATASET" = "core50" ]; then
