@@ -469,7 +469,7 @@ def main():
 
     all_accs_all_runs = []
     # iterate over runs
-    for r in range(args.n_runs):
+    for r in [6]: #range(args.n_runs):
         print('=============Stream Learning Run ' + str(r) + '=============')
         #test_acc_1st, test_acc, val_acc, test_acc_all_epochs, test_acc_1st_all_epochs = run(args, r)
 
