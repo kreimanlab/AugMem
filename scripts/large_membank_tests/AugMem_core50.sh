@@ -3,7 +3,7 @@
 # ./scripts/AugMem_toybox.sh toybox 1
 
 DATASET="${1:-"core50"}"
-OUTDIR="${DATASET}_outputs_slightlylowerlr_largemembank"
+OUTDIR="${DATASET}_outputs_slightlylowerlr_regularmembank"
 GPU="${2:-0}"
 
 if [ "$DATASET" = "core50" ]; then
@@ -39,7 +39,7 @@ mkdir -p $OUTDIR/class_instance/AugMem_ResNet18/
 #--visualize
 #enable this flag to visualize hypothesis and tsne plots
 #python -u experiment_aug.py --scenario class_iid --replay_coef 5 --dataset $DATASET --dataroot $DATAROOT  --output_dir $OUTDIR  --n_epoch_first_task 1 --replay_times 1 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_iid/AugMem_ResNet18/log.log    #&
-python -u experiment_aug.py --scenario class_instance --replay_coef 5 --dataset $DATASET --dataroot $DATAROOT  --output_dir $OUTDIR --n_epoch_first_task 10 --lr 0.0005 --replay_times 1 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 5 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 1000  --memory_Nfeat 128 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/log.log    #&
+python -u experiment_aug.py --scenario class_instance --replay_coef 5 --dataset $DATASET --dataroot $DATAROOT  --output_dir $OUTDIR --n_epoch_first_task 10 --lr 0.0005 --replay_times 1 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 5 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid $GPU --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/log.log    #&
 #--freeze_feature_extract
 #--visualize
 #enable this flag to visualize hypothesis and tsne plots
