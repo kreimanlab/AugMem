@@ -1,25 +1,15 @@
 #!/bin/bash
-OUTDIR="outputs_NoLogits"
+
+# USAGE: ./scripts/ablation/AugMem_NoReplay.sh 0 data/core50
+
+GPU="${1:-0}"
+OUTDIR="core50_ablation_nologits_outputs"
+DATAROOT="${2:-"/media/data/Datasets/Core50"}"
+
 #mkdir -p $OUTDIR/iid/AugMem_ResNet18/
 mkdir -p $OUTDIR/class_iid/AugMem_ResNet18/
 #mkdir -p $OUTDIR/instance/AugMem_ResNet18/
 mkdir -p $OUTDIR/class_instance/AugMem_ResNet18/
 
-#(224*224*3+10)*1200/[ ((64*13*13)+10)*400+1*250*8 ] = 83
-#[ ((64*13*13)+10)*400+1*250*8 ]/(224*224*3+10) = 28
-
-#--freeze_feature_extract
-#--freeze_batchnorm
-#--freeze_memory
-#--model_weights ./pretrain/cifar
-#--freeze_memory
-#--visualize
-#python -u experiment.py --scenario iid --reg_coef 1000 --output_dir outputs_rohil --n_epoch 1 --memory_size 200 --freeze_feature_extract --n_runs 10 --model_type resnet --memory_size 200 --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 0 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/iid/AugMem_ResNet18/log.log	#&
-
-#python -u experiment.py --scenario instance --reg_coef 1000 --output_dir outputs_rohil --n_epoch 1 --memory_size 200 --model_weights ./pretrain/cifar --freeze_feature_extract --memory_size 200 --n_runs 10 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 0 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/instance/AugMem_ResNet18/log.log    #&  
-    
-
-python -u experiment_aug.py --scenario class_iid --replay_coef 5 --output_dir outputs_NoLogits  --first_times 1 --replay_times 1 --logit_coef 0 --reg_coef 1000 --n_epoch 1  --memory_size 200 --freeze_feature_extract --n_runs 5 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 2 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/class_iid/AugMem_ResNet18/log.log    #&            
-#--freeze_feature_extract
-
-python -u experiment_aug.py --freeze_feature_extract --lr 0.00001 --first_times 3 --output_dir outputs_NoLogits --replay_coef 5 --replay_times 1 --logit_coef 0 --memory_size 200 --scenario class_instance --reg_coef 1000 --n_epoch 1 --n_runs 5 --model_type resnet --model_name ResNet18 --pretrained --memory_Nslots 100  --memory_Nfeat 8 --agent_type aug_mem --agent_name AugMem  --gpuid 2 --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 20 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/log.log    #&   
+python -u experiment_aug.py --scenario class_iid      --specific_runs 0 1 2 3 5 6 7 8   --memory_Nslots 100  --memory_Nfeat 8 --memory_size 200 --lr 0.001   --mem_sparse 5 --replay_coef 5 --replay_times 1 --reg_coef 1000 --logit_coef 0 --n_epoch_first_task 10  --dataroot "$DATAROOT" --freeze_feature_extract --output_dir outputs_memsz100  --n_epoch 1  --model_type resnet --model_name ResNet18 --pretrained --agent_type aug_mem --agent_name AugMem  --gpuid "$GPU" --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_iid/AugMem_ResNet18/log.log    #&
+python -u experiment_aug.py --scenario class_instance --specific_runs 2 3 5 6 9         --memory_Nslots 100  --memory_Nfeat 8 --memory_size 200 --lr 0.00025 --mem_sparse 5 --replay_coef 5 --replay_times 1 --reg_coef 1000 --logit_coef 0 --n_epoch_first_task 10  --dataroot "$DATAROOT" --freeze_feature_extract --output_dir outputs_memsz100  --n_epoch 1  --model_type resnet --model_name ResNet18 --pretrained --agent_type aug_mem --agent_name AugMem  --gpuid "$GPU" --momentum 0.9 --weight_decay 0.0001 --batch_size 21 --n_workers 8 | tee ${OUTDIR}/class_instance/AugMem_ResNet18/log.log    #&
