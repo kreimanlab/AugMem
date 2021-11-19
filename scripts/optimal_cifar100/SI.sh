@@ -1,6 +1,7 @@
-# Param #1: dataset name, e.g. core50, toybox, ilab2mlight, cifar100. Default is core50
+# Param #1: dataset name, e.g. core50, toybox, ilab2mlight, cifar100. Default is cifar100
 # Param #2: GPU ID. Default is 0
-DATASET="${1:-"core50"}"
+# Usage example: ./scripts/optimal_cifar100/SI.sh cifar100 0
+DATASET="${1:-"cifar100"}"
 OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
 

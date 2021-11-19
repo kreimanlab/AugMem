@@ -1,7 +1,8 @@
-# Param #1: dataset name, e.g. core50, toybox, ilab2mlight, cifar100. Default is core50
+# Param #1: dataset name, e.g. core50, toybox, ilab2mlight, cifar100. Default is cifar100
 # Param #2: GPU ID. Default is 0
-# Usage example: ./scripts/AugMem.sh cifar100 0 0.001 1 100 8 200 /media/data/morgan_data/cifar100
-DATASET="${1:-"core50"}"
+# Usage example: ./scripts/AugMem.sh cifar100 0  (runs the model on gpu 0, assuming the data is in data/cifar100)
+# Usage example: ./scripts/AugMem.sh cifar100 0 0.001 1 1000 128 2000 /media/data/morgan_data/cifar100
+DATASET="${1:-"cifar100"}"
 OUTDIR="${DATASET}_outputs"
 GPU="${2:-0}"
 lr=${3:-0.001}
