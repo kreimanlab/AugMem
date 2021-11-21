@@ -14,33 +14,61 @@ class Net(nn.Module):
         super(Net, self).__init__()
         
         self.config = model_config
-        self.batch_size = 32 #will be overwritten later        
-        
-        self.compressedChannel = 512
+        self.batch_size = -1 #will be overwritten later
+
         self.memfeat = MemFeatSz
         self.memslots = MemNumSlots
-        self.origsz = 13
-        self.cutlayer = 12
+
         self.focus_beta = self.config['mem_focus_beta'] #focus on content
         self.sharp_gamma = 1 #focus on locations
-        
-        # Load pretrained VGG16/resnet Model
-        self.model = models.squeezenet1_0(pretrained = self.config['pretrained'])
-        self.model.classifier[1] = nn.Conv2d(512,self.config['n_class'], (3, 3), stride=(1, 1), padding=(1, 1))           
-        # freezing weights for feature extraction if desired        
-        for param in self.model.parameters():
-            param.requires_grad = True
-        #print(self.model)    
-        # Remove last two layers: adaptive pool + fc layers
-        self.FeatureExtractor = torch.nn.Sequential(*(list(self.model.features)[:self.cutlayer]))         
-        # freezing weights for feature extraction if desired
-        if self.config['freeze_feature_extract']:
-            for param in self.FeatureExtractor.parameters():
-                param.requires_grad = False
-                
-        self.block = torch.nn.Sequential(*(list(self.model.features)[self.cutlayer:]),
-                                         self.model.classifier,
-                                        torch.nn.Flatten())
+
+        # "ResNet18" defaults to squeezenet for backwards compatibility with older code
+        if self.config["model_name"] == "SqueezeNet" or self.config["model_name"] == "ResNet18":
+            self.compressedChannel = 512
+            self.origsz = 13
+            self.cutlayer = 12
+
+            # Load pretrained squeezenet model
+            self.model = models.squeezenet1_0(pretrained = self.config['pretrained'])
+            self.model.classifier[1] = nn.Conv2d(self.compressedChannel,self.config['n_class'], (3, 3), stride=(1, 1), padding=(1, 1))
+            # freezing weights for feature extraction if desired
+            for param in self.model.parameters():
+                param.requires_grad = True
+            #print(self.model)
+            # Remove last two layers: adaptive pool + fc layers
+            self.FeatureExtractor = torch.nn.Sequential(*(list(self.model.features)[:self.cutlayer]))
+            # freezing weights for feature extraction if desired
+            if self.config['freeze_feature_extract']:
+                for param in self.FeatureExtractor.parameters():
+                    param.requires_grad = False
+
+            self.block = torch.nn.Sequential(*(list(self.model.features)[self.cutlayer:]),
+                                             self.model.classifier, torch.nn.Flatten())
+
+        elif self.config["model_name"] == "MobileNet":
+            self.compressedChannel = 64
+            self.origsz = 14
+            self.cutlayer = 8
+
+            self.model = models.mobilenet_v2(pretrained = self.config['pretrained'])
+            self.model.classifier[1] = nn.Linear(1280,self.config['n_class'])
+            # freezing weights for feature extraction if desired
+            for param in self.model.parameters():
+                param.requires_grad = True
+            #print(self.model)
+            self.FeatureExtractor = torch.nn.Sequential(*(list(self.model.features)[:self.cutlayer]))
+            # freezing weights for feature extraction if desired
+            if self.config['freeze_feature_extract']:
+                for param in self.FeatureExtractor.parameters():
+                    param.requires_grad = False
+
+            self.avgpool = torch.nn.Sequential(nn.AvgPool2d(kernel_size=7, stride=1), nn.Flatten()).cuda()
+            self.block = torch.nn.Sequential(*(list(self.model.features)[self.cutlayer:]),
+                                             self.avgpool,
+                                             self.model.classifier)
+
+        else:
+            raise ValueError("Invalid model name. Use 'SqueezeNet' or 'MobileNet'")
         
         #print(self.block)
         #self.memory = nn.Linear(self.memfeat, self.memfeat, False)
@@ -65,12 +93,12 @@ class Net(nn.Module):
         #print(extracted.shape)
         #x = extracted.view(-1,512,13,1,13).repeat(1,1,1,self.memslots,1)
 
-        x = extracted.view(-1, 512, 13, 13)  # dim=3
+        x = extracted.view(-1, self.compressedChannel, self.origsz, self.origsz)  # dim=3
 
         x = x.permute(0, 2, 3, 1)
 
-        assert 512 % self.memfeat == 0, "Parameter memory_Nfeat must be a factor of 512"
-        x = x.view(-1, 13, 13, int(512/self.memfeat), self.memfeat)  # dim=4 (Morgan: I think it's 5-dimensional)
+        assert self.compressedChannel % self.memfeat == 0, "Parameter memory_Nfeat must be a factor of " + str(self.compressedChannel)
+        x = x.view(-1, self.origsz, self.origsz, int(self.compressedChannel/self.memfeat), self.memfeat)  # dim=4 (Morgan: I think it's 5-dimensional)
 
         # self.memory = self.sigmoid(self.memory)
         att_read = self._similarity(x, self.focus_beta, self.memory)
@@ -80,7 +108,7 @@ class Net(nn.Module):
         # read = F.linear(att_read, self.memory)
         read = att_read.matmul(self.memory)
         
-        read = read.view(-1,13,13,64*8).permute(0,3,1,2)
+        read = read.view(-1, self.origsz, self.origsz, self.compressedChannel).permute(0, 3, 1, 2)
         read = read.view(-1, self.compressedChannel, self.origsz, self.origsz)
         
         direct = self.block(extracted)        
@@ -101,7 +129,7 @@ class Net(nn.Module):
         #att_read = F.softmax(att_read,dim=3) 
         #read = att_read.matmul(self.memory)
         #read = F.linear(att_read, self.memory)
-        read = read.view(-1,13,13,64*8).permute(0,3,1,2)
+        read = read.view(-1, self.origsz, self.origsz, self.compressedChannel).permute(0, 3, 1, 2)
         #read = read.view(-1, self.compressedChannel,self.origsz,self.origsz)
         
         out = self.block(read)

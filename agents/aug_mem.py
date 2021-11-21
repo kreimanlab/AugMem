@@ -289,8 +289,140 @@ class AugMem(nn.Module):
                 self.ListUsedMem[indices] = 1
         self.memory = self.net.memory.clone().detach().cpu()          
             
-        self.net.trainModeOn() 
-    
+        self.net.trainModeOn()
+
+    # update storage for reading attention and least memory usage indices based after each epoch
+    # This is an alternative version of the function that uses the herding strategy
+    # ONLY USED FOR ABLATION STUDIES as of Nov 20, 2021.
+    def update_HERDING_Storage_epoch(self, train_loader):
+        self.net.evalModeOn()
+        print('============================================')
+        att_read_dict = {cls: [] for cls in self.active_out_nodes}
+        avgSampleNum = math.floor(self.capacity / len(self.active_out_nodes))
+        features = []
+
+        # mem = self.memory.clone().view(self.MemNumSlots*self.MemFeatSz)
+        # iterating over train loader
+        for i, (inputs, target) in enumerate(train_loader):
+
+            # transferring to gpu if applicable
+            if self.gpu:
+                inputs = inputs.cuda()
+                target = target.cuda()
+
+            # we store/update our storage Reading Attention
+            direct, out, att_read, read, extracted = self.forward(inputs)
+            # att_read = extracted.detach().view(inputs.size(0),-1)
+            att_read = att_read.detach().cpu().view(-1, self.compressedWidth, self.compressedWidth,
+                                                    int(self.compressedChannel / self.memsize), self.MemNumSlots)
+            # find top retireved memory address
+            att_read_ind = torch.argsort(att_read, dim=4, descending=True)
+            # print(torch.max(att_read_ind))
+            att_read_ind = att_read_ind[:, :, :, :, 0:self.MemtopK]
+            att_read = att_read_ind.view(inputs.size(0), -1)
+            att_read = att_read.view(inputs.size(0), -1)
+
+            read = read.detach().cpu().reshape(inputs.size(0),
+                                               self.compressedWidth * self.compressedWidth * self.compressedChannel)
+
+            direct = torch.reshape(direct.detach().cpu(), (inputs.size(0), self.config['n_class']))
+
+            target = target.detach().cpu()
+
+            # print(lab.shape)
+            # print(read[i].shape, att_read[i].shape, direct[i].shape, lab[0].shape)
+            for i in range(att_read.size(0)):
+                lab = torch.zeros(1, 1)
+                lab[0, 0] = target[i].item()
+                feat = torch.cat((read[i], att_read[i], direct[i], lab[0]), 0).unsqueeze(0)
+                # print(feat.shape)
+                features.append(feat)
+
+                # print('==========================================')
+
+        # get features
+        features = torch.cat(features, 0)
+
+        # normalize features
+        feature_sz_read = self.compressedWidth * self.compressedWidth * self.compressedChannel
+        for i in range(features.shape[0]):
+            features[i, :feature_sz_read] = features[i, :feature_sz_read] / features[i, :feature_sz_read].norm()
+
+            # getting mean & normalizing
+        features = features.numpy()
+        labelist = features[:, -1]
+        uni_class_list = np.unique(labelist)
+        # print(features.shape)
+
+        for ucls in uni_class_list:
+
+            feat_cls_ind = np.where(labelist == ucls)
+            # print('feat_cls_ind',feat_cls_ind[0].shape)
+            class_mean = np.mean(features[feat_cls_ind[0], :feature_sz_read], axis=0)
+            class_mean = class_mean / np.linalg.norm(class_mean)
+            # print(class_mean.shape)
+
+            # select examplar set
+            exemplar_set = []
+            # list of tensors of shape (feature_size,)
+            exemplar_features = []
+            trackid = []
+            # computing exemplars
+            for k in range(avgSampleNum):
+                S = np.sum(exemplar_features, axis=0)
+                phi = features[feat_cls_ind[0], :feature_sz_read]
+                mu = class_mean
+                mu_p = (1.0 / (k + 1)) * (phi + S)
+                # normalize
+                mu_p = mu_p / np.linalg.norm(mu_p)
+                # print('mu', mu.shape)
+                # print('mu_p', mu_p.shape)
+                diff = np.sqrt(np.sum((mu - mu_p) ** 2, axis=1))
+                # print(diff.shape)
+                # e = np.argmin(diff)
+                e = np.argsort(diff)
+                # print(e)
+                for ind in e:
+                    if ind not in trackid:
+                        # print(ind)
+                        trackid.append(ind)
+                        exemplar_set.append(torch.Tensor(features[feat_cls_ind[0][ind], feature_sz_read:-1]))
+                        exemplar_features.append(features[feat_cls_ind[0][ind], :feature_sz_read])
+                        break
+
+                # features = np.delete(features, e, axis = 0)
+
+            # print(exemplar_set[0].shape)
+            exemplars = torch.stack(exemplar_set, dim=0)
+            # print(exemplars.shape)
+            self.StorageAttRead[int(ucls)] = exemplars
+            print('storing class id: ' + str(int(ucls)) + ' for num of samples = ' + str(
+                self.StorageAttRead[ucls].size(0)))
+
+        # removing extra samples from previous tasks
+        for cls in self.active_out_nodes:
+            self.StorageAttRead[cls] = self.StorageAttRead[cls][:avgSampleNum]
+
+        # update least used memory slots
+        for cls in range(self.config['n_class']):
+            if cls in self.StorageAttRead.keys():
+                # print(self.StorageAttRead[cls][:,:13*13*64*self.MemtopK].shape)
+                sz_w = self.StorageAttRead[cls][:, :self.compressedWidth * self.compressedWidth * int(
+                    self.compressedChannel / self.memsize) * self.MemtopK].size(0)
+                sz_h = self.StorageAttRead[cls][:, :self.compressedWidth * self.compressedWidth * int(
+                    self.compressedChannel / self.memsize) * self.MemtopK].size(1)
+                indices = torch.reshape(self.StorageAttRead[cls][:,
+                                        :self.compressedWidth * self.compressedWidth * int(
+                                            self.compressedChannel / self.memsize) * self.MemtopK],
+                                        (sz_w, sz_h)).long()
+                # print(indices.shape)
+                # print(torch.max(indices))
+                self.ListUsedMem[indices] = 1
+
+        self.memory = self.net.memory.clone().detach().cpu()
+
+        self.net.trainModeOn()
+
     # compute validation loss/accuracy (being called outside class)
     def validation(self, dataloader):
         acc_out = AverageMeter()
@@ -472,7 +604,11 @@ class AugMem(nn.Module):
         ## END of epoch train data
         ## UPDATE storage of reading attention
         ## UPDATE least used memory slot indices
-        self.updateStorage_epoch(train_loader)
+        if self.config['herding_mode']:
+            # This will only occur during the "herding" ablation study.
+            self.update_HERDING_Storage_epoch(train_loader)
+        else:
+            self.updateStorage_epoch(train_loader)
         
         if task != 0:
             for g in self.optimizer_net.param_groups:

@@ -87,7 +87,8 @@ def run(args, run):
         'ntask':len(tasks),
         'mem_focus_beta':args.mem_sparse,
         'logit_coef':args.logit_coef,
-        'visualize':args.visualize
+        'visualize':args.visualize,
+        'herding_mode': args.herding_mode  # for ablation study
         }
 
     if args.dataset == "core50":
@@ -388,6 +389,10 @@ def get_args(argv):
     parser.add_argument('--gpuid', nargs="+", type=int, default=[-1],
                         help="The list of gpuid, ex:--gpuid 3 1. Negative value means cpu-only")
     parser.add_argument('--n_workers', default=1, type=int, help="Number of cpu workers for dataloader")
+
+    # For HAMN ablation studies
+    parser.add_argument('--herding_mode', default=False, action='store_true', dest='herding_mode',
+                        help="To use herding to select examplar")
 
     # return parsed arguments
     args = parser.parse_args(argv)
