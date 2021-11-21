@@ -535,7 +535,8 @@ class AugMem(nn.Module):
             loss_classidir = self.criterion_classi(direct, target) 
             logitsloss = self.config['logit_coef']*self.criterion_BCElogits(torch.sigmoid(output), torch.sigmoid(direct))
             loss_reg = self.criterion_regularize(self.net.memory)
-            loss = loss_classiout + loss_classidir + logitsloss + loss_reg           
+            #loss = loss_classiout + loss_classidir + logitsloss + loss_reg
+            loss = loss_classiout + logitsloss + loss_reg
             
             loss.backward()
             self.clip_grads(self.net)
