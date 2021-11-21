@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# USAGE: ./scripts/ablation/AugMem_unablated.sh 0 data/core50
+# USAGE: ./scripts/ablation/AugMem_MobileNet.sh 0 data/core50
 
 GPU="${1:-0}"
-OUTDIR="core50_ablation_unablated_outputs"
+OUTDIR="core50_ablation_mobilenet_outputs"
 DATAROOT="${2:-"/media/data/Datasets/Core50"}"
 
 #mkdir -p $OUTDIR/iid/AugMem_ResNet18/
