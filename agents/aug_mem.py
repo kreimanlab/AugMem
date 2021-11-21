@@ -314,7 +314,7 @@ class AugMem(nn.Module):
             direct, out, att_read, read, extracted = self.forward(inputs)
             # att_read = extracted.detach().view(inputs.size(0),-1)
             att_read = att_read.detach().cpu().view(-1, self.net.origsz, self.net.origsz,
-                                                    int(self.net.compressedChannel / self.memsize), self.MemNumSlots)
+                                                    int(self.net.compressedChannel / self.MemFeatSz), self.MemNumSlots)
             # find top retireved memory address
             att_read_ind = torch.argsort(att_read, dim=4, descending=True)
             # print(torch.max(att_read_ind))
@@ -408,12 +408,12 @@ class AugMem(nn.Module):
             if cls in self.StorageAttRead.keys():
                 # print(self.StorageAttRead[cls][:,:13*13*64*self.MemtopK].shape)
                 sz_w = self.StorageAttRead[cls][:, :self.net.origsz * self.net.origsz * int(
-                    self.net.compressedChannel / self.memsize) * self.MemtopK].size(0)
+                    self.net.compressedChannel / self.MemFeatSz) * self.MemtopK].size(0)
                 sz_h = self.StorageAttRead[cls][:, :self.net.origsz * self.net.origsz * int(
-                    self.net.compressedChannel / self.memsize) * self.MemtopK].size(1)
+                    self.net.compressedChannel / self.MemFeatSz) * self.MemtopK].size(1)
                 indices = torch.reshape(self.StorageAttRead[cls][:,
                                         :self.net.origsz * self.net.origsz * int(
-                                            self.net.compressedChannel / self.memsize) * self.MemtopK],
+                                            self.net.compressedChannel / self.MemFeatSz) * self.MemtopK],
                                         (sz_w, sz_h)).long()
                 # print(indices.shape)
                 # print(torch.max(indices))
