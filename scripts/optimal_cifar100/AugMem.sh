@@ -26,7 +26,6 @@ else
 fi
 
 DATAROOT=${8:-${DDATAROOT}}
-OUTDIR=${9:-augmem_gridsearch_cifar100}
 
 mkdir -p ${OUTDIR}/class_iid/AugMem_SqueezeNet
 mkdir -p plots
