@@ -1,0 +1,16 @@
+class,index,full class name
+boat,1,boat
+bus,2,bus
+car,3,car
+equip,4,equipment
+f1car,5,f1car
+heli,6,helicopter
+mil,7,military
+monster,8,monster truck
+pickup,9,pickup truck
+plane,10,plane
+semi,11,semi truck
+tank,12,tank
+train,13,train
+ufo,14,UFO
+van,15,van
