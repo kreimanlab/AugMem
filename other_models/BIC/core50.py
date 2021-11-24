@@ -7,7 +7,7 @@ class Core50:
         
         self.batch_num = 5
         #self.rootdir = '/home/mengmi/Projects/Proj_CL_NTM/pytorch/core50/dataloaders/task_filelists/'
-        self.rootdir = './../../core50_dataloaders/dataloaders/task_filelists/'
+        self.rootdir = './core50/dataloaders/task_filelists/'
         #self.rootdir = '/media/rushikesh/New Volume/Harvard_thesis/continual_learning/code/BIC/BIC/core50/dataloaders/core50_task_filelists/'#/class_iid/run0/stream/train_task_00_filelist.txt'
         
         self.train_data = []

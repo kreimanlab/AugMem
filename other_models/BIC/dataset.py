@@ -14,9 +14,14 @@ class BatchData(Dataset):
         self.images = images
         self.labels = labels
         self.input_transform = input_transform
-        #self.dataroot = '/media/data/Datasets/ilab2M/iLab-2M-Light/train_img_distributed' 
-        #self.dataroot = '/media/data/morgan_data/toybox/images' 
-        self.dataroot = '/media/data/Datasets/Core50/core50_128x128' #'/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50/core50_128x128/'
+        # if self.dataset == 'ilab':
+        #     self.dataroot = '/media/data/Datasets/ilab2M/iLab-2M-Light/train_img_distributed' 
+        # if self.dataset == 'toybox':
+        #     self.dataroot = '/media/data/morgan_data/toybox/images' 
+        # if self.dataset == 'core50':
+        #     self.dataroot = '/media/data/Datasets/Core50/core50_128x128' #'/media/mengmi/KLAB15/Mengmi/proj_CL_NTM/data/core50/core50_128x128/'
+        #if self.dataset == 'cifar100':
+        self.dataroot = '/home/rushikesh/P1_Oct/cifar100/cifar100png'
         #self.dataroot = './core50/core50_128x128/'
 
     def __getitem__(self, index):

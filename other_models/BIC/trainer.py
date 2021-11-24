@@ -24,6 +24,7 @@ from model import PreResNet, BiasLayer
 from core50 import Core50
 from toybox import Toybox
 from ilab import Ilab
+from cifar100 import cifar100
 from exemplar import Exemplar
 from copy import deepcopy
 
@@ -35,15 +36,17 @@ class Trainer:
         #self.dataset = Cifar100()
         if dataset == "core50":
             self.dataset = Core50(paradigm, run)
-            self.test_size = 450
         if dataset == 'toybox':
             self.dataset = Toybox(paradigm, run)
-            self.test_size = 2610
         if dataset == "ilab":
             print("in ilab data")
             self.dataset = Ilab(paradigm, run)
-            self.test_size = 1680
-
+        if dataset == "cifar100":
+            print("in cifar100 data")
+            self.dataset = cifar100(paradigm, run)
+        
+        print("total_cls is")
+        print(total_cls)
         self.model = PreResNet(32,total_cls).cuda()
         print(self.model)
         self.model = nn.DataParallel(self.model, device_ids=[0])
@@ -52,8 +55,8 @@ class Trainer:
         self.bias_layer3 = BiasLayer().cuda()
         self.bias_layer4 = BiasLayer().cuda()
         self.bias_layer5 = BiasLayer().cuda()
-        if self.total_cls == 10:
-            self.bias_layers=[self.bias_layer1, self.bias_layer2, self.bias_layer3, self.bias_layer4, self.bias_layer5]
+        # if self.total_cls == 10:
+        #     self.bias_layers=[self.bias_layer1, self.bias_layer2, self.bias_layer3, self.bias_layer4, self.bias_layer5]
 
         if self.total_cls == 12:
             self.bias_layer6 = BiasLayer().cuda()
@@ -64,6 +67,28 @@ class Trainer:
             self.bias_layer6 = BiasLayer().cuda()
             self.bias_layer7 = BiasLayer().cuda()
             self.bias_layers=[self.bias_layer1, self.bias_layer2, self.bias_layer3, self.bias_layer4, self.bias_layer5,self.bias_layer6, self.bias_layer7]
+            
+        if self.total_cls == 100:
+            print("for ilab data")
+            self.bias_layer6 = BiasLayer().cuda()
+            self.bias_layer7 = BiasLayer().cuda()
+            self.bias_layer8 = BiasLayer().cuda()
+            self.bias_layer9 = BiasLayer().cuda()
+            self.bias_layer10 = BiasLayer().cuda()
+            self.bias_layer11 = BiasLayer().cuda()
+            self.bias_layer12 = BiasLayer().cuda()
+            self.bias_layer13 = BiasLayer().cuda()
+            self.bias_layer14 = BiasLayer().cuda()
+            self.bias_layer15 = BiasLayer().cuda()
+            self.bias_layer16 = BiasLayer().cuda()
+            self.bias_layer17 = BiasLayer().cuda()
+            self.bias_layer18 = BiasLayer().cuda()
+            self.bias_layer19 = BiasLayer().cuda()
+            self.bias_layer20 = BiasLayer().cuda()
+
+            self.bias_layers=[self.bias_layer1, self.bias_layer2, self.bias_layer3, self.bias_layer4, self.bias_layer5,self.bias_layer6, self.bias_layer7,
+                                self.bias_layer8,self.bias_layer9,self.bias_layer10,self.bias_layer11,self.bias_layer12,self.bias_layer13,self.bias_layer14,
+                                self.bias_layer15,self.bias_layer16,self.bias_layer17,self.bias_layer18,self.bias_layer19,self.bias_layer20]
             
         self.input_transform= Compose([
                                 transforms.Resize(32),
@@ -82,7 +107,6 @@ class Trainer:
 
 
     def test(self, testdata):
-        print("Testing..")
         print("test data number : ",len(testdata))
         self.model.eval()
         count = 0
@@ -95,7 +119,8 @@ class Trainer:
         task5 = 0
         task6 = 0
         task7 = 0
-
+        task8,task9,task10,task11,task12,task13,task14 = 0,0,0,0,0,0,0
+        task15,task16,task17,task18,task19,task20 = 0,0,0,0,0,0
         sum1 = 0
         sum2 = 0
         sum3 = 0
@@ -103,7 +128,8 @@ class Trainer:
         sum5 = 0
         sum6 = 0
         sum7 = 0
-
+        sum8,sum9,sum10,sum11,sum12,sum13,sum14 = 0,0,0,0,0,0,0
+        sum15,sum16,sum17,sum18,sum19,sum20 = 0,0,0,0,0,0
 
 
         for i, (image, label) in enumerate(testdata):
@@ -116,76 +142,149 @@ class Trainer:
             wrong += sum(pred != label).item()
             for a,b in zip(label,pred):
                 if a == b:
-                    if a == 0 or a == 1:
+                    if a >= 0 and a <= 4:
                         task1 += 1
-                    elif a == 2 or a == 3:
+                    elif a >= 5 and a <= 9:
                         task2 += 1
-                    elif a == 4 or a == 5:
+                    elif a >= 10 and a <= 14:
                         task3 += 1
-                    elif a == 6 or a == 7:
+                    elif a >= 15 and a <= 19:
                         task4 += 1
-                    elif a == 8 or a == 9:
+                    elif a >= 20 and a <= 24:
                         task5 += 1
-                    elif a == 10 or a == 11:
+                    elif a >= 25 and a <= 29:
                         task6 += 1
-                    elif a == 12 or a == 13:
+                    elif a >= 30 and a <= 34:
                         task7 += 1
+                    elif a >= 35 and a <= 39:
+                        task8 += 1
+                    elif a >= 40 and a <= 44:
+                        task9 += 1
+                    elif a >= 45 and a <= 49:
+                        task10 += 1
+                    elif a >= 50 and a <= 54:
+                        task11 += 1
+                    elif a >= 55 and a <= 59:
+                        task12 += 1
+                    elif a >= 60 and a <= 64:
+                        task13 += 1
+                    elif a >= 65 and a <= 69:
+                        task14 += 1
+                    elif a >= 70 and a <= 74:
+                        task15 += 1
+                    elif a >= 75 and a <= 79:
+                        task16 += 1
+                    elif a >= 80 and a <= 84:
+                        task17 += 1
+                    elif a >= 85 and a <= 89:
+                        task18 += 1
+                    elif a >= 90 and a <= 94:
+                        task19 += 1
+                    elif a >= 95 and a <= 99:
+                        task20 += 1
 
-                if a == 0 or a == 1:
+                if a >= 0 and a <= 4:
                     sum1 += 1
-                elif a == 2 or a == 3:
+                elif a >= 5 and a <= 9:
                     sum2 += 1
-                elif a == 4 or a == 5:
+                elif a >= 10 and a <= 14:
                     sum3 += 1
-                elif a == 6 or a == 7:
+                elif a >= 15 and a <= 19:
                     sum4 += 1
-                elif a == 8 or a == 9:
+                elif a >= 20 and a <= 24:
                     sum5 += 1
-                elif a == 10 or a == 11:
+                elif a >= 25 and a <= 29:
                     sum6 += 1
-                elif a == 12 or a == 13:
+                elif a >= 30 and a <= 34:
                     sum7 += 1
+                elif a >= 35 and a <= 39:
+                    sum8 += 1
+                elif a >= 40 and a <= 44:
+                    sum9 += 1
+                elif a >= 45 and a <= 49:
+                    sum10 += 1
+                elif a >= 50 and a <= 54:
+                    sum11 += 1
+                elif a >= 55 and a <= 59:
+                    sum12 += 1
+                elif a >= 60 and a <= 64:
+                    sum13 += 1
+                elif a >= 65 and a <= 69:
+                    sum14 += 1
+                elif a >= 70 and a <= 74:
+                    sum15 += 1
+                elif a >= 75 and a <= 79:
+                    sum16 += 1
+                elif a >= 80 and a <= 84:
+                    sum17 += 1
+                elif a >= 85 and a <= 89:
+                    sum18 += 1
+                elif a >= 90 and a <= 94:
+                    sum19 += 1
+                elif a >= 95 and a <= 99:
+                    sum20 += 1
+    
 
         # print("pred and label")
         # print(pred,label)
-        
 
         acc = correct / (wrong + correct)
         print("Test Acc: {}".format(acc*100))
-        #print("task wise")
-        #print(task1, task2, task3, task4, task5,task6, task7)
-        #print("task wise sum")
-        #print(sum1, sum2, sum3, sum4,sum5, sum6, sum7) 
-        test_size = self.test_size
-        #print("test wise accuracies")
-        #print(task1 / sum1, task2 / sum2, task3 /sum3, task4 / sum4, task5 / sum5,task6 / sum6, task7 / sum7)
-        
-        if(sum7 == test_size):
-            print("task 1 acc:", task1/sum1)
-        elif(sum6 == test_size):
-            print("task 1 acc:", task1/sum1)
-        elif(sum5 == test_size):
-            print("task 1 acc:", task1/sum1)
-        elif(sum4 == test_size):
-            print("task 1 acc:", task1/sum1)
-        elif(sum3 == test_size):
-            print("task 1 acc:", task1/sum1)
-        elif(sum2 == test_size):
-            print("task 1 acc:", task1/sum1)
-        elif(sum1 == test_size):
-            print("task 1 acc:", task1/sum1)
-        
-        
-        
-       
-        
+        # print("task wise")
+        # print(task1, task2, task3, task4, task5,task6, task7)
+        # print("task wise sum")
+        # print(sum1, sum2, sum3, sum4,sum5, sum6, sum7) 
+        print("Task wise accuracies:")
+        if sum1 != 0:
+            #task1_res.append(float(task1 / sum1))
+            acc_1sttask = task1 / sum1
+            print("task 1:",task1 / sum1)
+        if sum2 != 0:
+            print("task 2:",task2 / sum2)
+        if sum3 != 0:
+            print("task 3:",task3 / sum3)
+        if sum4 != 0:
+            print("task 4:",task4 / sum4)
+        if sum5 != 0:
+            print("task 5:",task5 / sum5)
+        if sum6 != 0:
+            print("task 6:",task6 / sum6)
+        if sum7 != 0:
+            print("task 7:",task7 / sum7)
+        if sum8 != 0:
+            print("task 8:",task8 / sum8)
+        if sum9 != 0:
+            print("task 9:",task9 / sum9)
+        if sum10 != 0:
+            print("task 10:",task10 / sum10)
+        if sum11 != 0:
+            print("task 11:",task11 / sum11)
+        if sum12 != 0:
+            print("task 12:",task12 / sum12)
+        if sum13 != 0:
+            print("task 13:",task13 / sum13)
+        if sum14 != 0:
+            print("task 14:",task14 / sum14)
+        if sum15 != 0:
+            print("task 15:",task15 / sum15)
+        if sum16 != 0:
+            print("task 16:",task16 / sum16)
+        if sum17 != 0:
+            print("task 17:",task17 / sum17)
+        if sum18 != 0:
+            print("task 18:",task18 / sum18)
+        if sum19 != 0:
+            print("task 19:",task19 / sum19)
+        if sum20 != 0:
+            print("task 20:",task20 / sum20)
+
         # print("correct")
         # print(correct)
         # print("wrong + correct")
         # print(wrong + correct)
         self.model.train()
         print("---------------------------------------------")
-        return acc
+        return acc,acc_1sttask
 
 
     def eval(self, criterion, evaldata):
@@ -229,6 +328,7 @@ class Trainer:
         train_ys = []
 
         test_accs = []
+        first_task_test_res_final = []
         for inc_i in range(dataset.batch_num):
             print(f"Incremental num : {inc_i}")
             train, val, test = dataset.getNextClasses(inc_i)
@@ -262,7 +362,8 @@ class Trainer:
             # bias_optimizer = optim.SGD(self.bias_layers[inc_i].parameters(), lr=lr, momentum=0.9)
             bias_optimizer = optim.Adam(self.bias_layers[inc_i].parameters(), lr=0.001)
             # bias_scheduler = StepLR(bias_optimizer, step_size=70, gamma=0.1)
-            exemplar.update(total_cls//dataset.batch_num, (train_x, train_y), (val_x, val_y))
+            #exemplar.update(total_cls//dataset.batch_num, (train_x, train_y), (val_x, val_y)) #is this even correct????? #RBZ changes
+            exemplar.update(total_cls//20, (train_x, train_y), (val_x, val_y))
 
             self.seen_cls = exemplar.get_cur_cls()
             print("seen cls number : ", self.seen_cls)
@@ -270,6 +371,8 @@ class Trainer:
             val_bias_data = DataLoader(BatchData(val_xs, val_ys, self.input_transform),
                         batch_size=1, shuffle=True, drop_last=False)
             test_acc = []
+            first_task_test_res = []
+
 
 
             for epoch in range(epoches):
@@ -285,7 +388,7 @@ class Trainer:
                     self.stage1_distill(train_data, criterion, optimizer)
                 else:
                     self.stage1(train_data, criterion, optimizer)
-                acc = self.test(test_data)
+                acc,_ = self.test(test_data)
             if inc_i > 0:
                 for epoch in range(epoches):
                     # bias_scheduler.step()
@@ -294,30 +397,55 @@ class Trainer:
                         self.bias_layers[_].train()
                     self.stage2(val_bias_data, criterion, bias_optimizer)
                     if epoch % 1 == 0:
-                        acc = self.test(test_data)
+                        acc,_ = self.test(test_data)
                         test_acc.append(acc)
             for i, layer in enumerate(self.bias_layers):
                 layer.printParam(i)
             self.previous_model = deepcopy(self.model)
-            acc = self.test(test_data)
+            acc,acc_1stTask = self.test(test_data)
             test_acc.append(acc)
+            first_task_test_res.append(acc_1stTask)
+
             test_accs.append(max(test_acc))
+            first_task_test_res_final.append(max(first_task_test_res)) #probably doesnt matter because of 1epoch afterwards
+
             print("test_accs")
             print(test_accs)
-        return test_accs
+        return test_accs,first_task_test_res_final
 
     def bias_forward(self, input):
-        in1 = input[:, :2]
-        in2 = input[:, 2:4]
-        in3 = input[:, 4:6]
-        in4 = input[:, 6:8]
-        in5 = input[:, 8:10]
+        in1 = input[:, :5]
+        in2 = input[:, 5:10]
+        in3 = input[:, 10:15]
+        in4 = input[:, 15:20]
+        in5 = input[:, 20:25]
+        in6 = input[:, 25:30]
+        in7 = input[:, 30:35]
+        in8 = input[:, 35:40]
+        in9 = input[:, 40:45]
+        in10 = input[:, 45:50]
+        in11 = input[:, 50:55]
+        in12 = input[:, 55:60]
+        in13 = input[:, 60:65]
+        in14 = input[:, 65:70]
+        in15 = input[:, 70:75]
+        in16 = input[:, 75:80]
+        in17 = input[:, 80:85]
+        in18 = input[:, 85:90]
+        in19 = input[:, 90:95]
+        in20 = input[:, 95:100]
         
         out1 = self.bias_layer1(in1)
         out2 = self.bias_layer2(in2)
         out3 = self.bias_layer3(in3)
         out4 = self.bias_layer4(in4)
         out5 = self.bias_layer5(in5)
+        out6,out7,out8,out9 = self.bias_layer6(in6),self.bias_layer7(in7),self.bias_layer8(in8),self.bias_layer9(in9)
+        out10,out11,out12,out13 = self.bias_layer10(in10),self.bias_layer11(in11),self.bias_layer12(in12),self.bias_layer13(in13)
+        out14,out15,out16,out17 = self.bias_layer14(in14),self.bias_layer15(in15),self.bias_layer16(in16),self.bias_layer17(in17)
+        out18,out19,out20 = self.bias_layer18(in18),self.bias_layer19(in19),self.bias_layer20(in20)
+        
+         
         if self.total_cls == 10:
            return torch.cat([out1, out2, out3, out4, out5], dim = 1)
         elif self.total_cls == 12:
@@ -325,12 +453,19 @@ class Trainer:
             out6 = self.bias_layer6(in6)
             return torch.cat([out1, out2, out3, out4, out5,out6], dim = 1)
             
-        elif elf.total_cls == 14:
+        elif self.total_cls == 14:
             in6 = input[:, 10:12]
             out6 = self.bias_layer6(in6)
             in7 = input[:, 12:14]
             out7 = self.bias_layer7(in7)
-        return torch.cat([out1, out2, out3, out4, out5,out6,out7], dim = 1)
+            return torch.cat([out1, out2, out3, out4, out5,out6,out7], dim = 1)
+
+        if self.total_cls == 100:
+            #print("in total_cls = 100")
+            return torch.cat([out1, out2, out3, out4, out5,
+           out6,out7,out8,out9,out10,out11,out12,out13,
+           out14,out15,out16,out17,out18,out19,out20], dim = 1)
+
         '''elif self.total_cls == 14:
             in6 = input[:, 10:12]
             in7 = input[:, 12:14]
@@ -358,8 +493,8 @@ class Trainer:
         print("Training ... ")
         distill_losses = []
         ce_losses = []
-        T = 2
-        alpha = (self.seen_cls - 2)/ self.seen_cls
+        T = 5
+        alpha = (self.seen_cls - 5)/ self.seen_cls
         print("classification proportion 1-alpha = ", 1-alpha)
         for i, (image, label) in enumerate(tqdm(train_data)):
             image = image.cuda()
