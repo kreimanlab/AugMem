@@ -14,7 +14,8 @@ class BatchData(Dataset):
         self.images = images
         self.labels = labels
         self.input_transform = input_transform
-
+#        print("in batch_data")
+#        print(dataset1)
         if dataset1 == 'core50':
             self.dataroot = '/media/data/Datasets/Core50/core50_128x128' #'/media/data/Datasets/Core50/core50_128x128'
         
@@ -23,6 +24,9 @@ class BatchData(Dataset):
 
         if dataset1 == 'ilab':
             self.dataroot = '/media/data/Datasets/ilab2M/iLab-2M-Light/train_img_distributed'
+        
+        if dataset1 == 'cifar100':
+            self.dataroot = '/home/rushikesh/P1_Oct/cifar100/cifar100png'
 
 
     def __getitem__(self, index):

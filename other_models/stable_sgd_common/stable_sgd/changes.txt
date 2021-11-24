@@ -1,0 +1,10 @@
+changes --> 
+in data_utils --> 
+	in datast_core50 --> the number of lists
+	batch_data --> the path to dataset
+	instead of core50 -> toybox, ilab
+
+
+Tp run __>
+
+CUDA_VISIBLE_DEVICES=3 python -m stable_sgd.main --dataset cifar-100 --tasks 5 --epochs-per-task 4 --lr 0.15 --gamma 0.85 --batch-size 128 --dropout 0.1 --seed 1234

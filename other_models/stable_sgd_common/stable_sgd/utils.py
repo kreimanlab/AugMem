@@ -77,7 +77,7 @@ def end_experiment(args, acc_db, loss_db, hessian_eig_db):
 	hessian_df.to_csv(EXPERIMENT_DIRECTORY+'/hessian_eigs.csv')
 	
 	# 2. calculate average accuracy and forgetting (c.f. ``evaluation`` section in our paper)
-	#print(acc_db.keys())
+#	print(acc_db.keys())
 	score = np.mean([acc_db[i][-1] for i in acc_db.keys()])
 	forget = np.mean([max(acc_db[i])-acc_db[i][-1] for i in range(1, args.tasks+1)])/100.0
 	

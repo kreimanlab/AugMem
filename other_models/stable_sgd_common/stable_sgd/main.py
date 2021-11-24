@@ -55,10 +55,7 @@ def eval_single_epoch(net, loader, criterion, task_id=None):
 			data = data.to(DEVICE)
 			target = target.view(-1).to(DEVICE) # to(DEVICE) 
 			# for cifar head
-			if task_id is not None:
-				output = net(data, task_id)
-			else:
-				output = net(data)
+			output = net(data)
 			test_loss += criterion(output, target).item()
 			pred = output.data.max(1, keepdim=True)[1]
 			correct += pred.eq(target.data.view_as(pred)).sum()
@@ -81,7 +78,7 @@ def get_benchmark_data_loader(args):
 		return get_permuted_mnist_tasks
 	elif args.dataset == 'rot-mnist' or args.dataset == 'rotation-mnist':
 		return get_rotated_mnist_tasks
-	elif args.dataset == 'core50' or args.dataset == 'toybox' or args.dataset == 'ilab':
+	elif args.dataset == 'core50' or args.dataset == 'toybox' or args.dataset == 'ilab' or args.dataset == 'cifar100':
 		return get_split_cifar100_tasks
 	else:
 		raise Exception("Unknown dataset.\n"+
@@ -106,6 +103,9 @@ def get_benchmark_model(args):
 		return ResNet18(config={'dropout': args.dropout}).to(DEVICE)
 	elif 'ilab' in args.dataset:
 		print("in resnet")
+		return ResNet18(config={'dropout': args.dropout}).to(DEVICE)
+	elif 'cifar100' in args.dataset:
+		print("in cifar100 n resnet")
 		return ResNet18(config={'dropout': args.dropout}).to(DEVICE)
 		#return MLP(args.hiddens, {'dropout': args.dropout}).to(DEVICE)
 	else:

@@ -11,6 +11,7 @@ import torchvision.transforms.functional as TorchVisionFunc
 from stable_sgd.core50 import core50
 from stable_sgd.toybox import toybox
 from stable_sgd.ilab import ilab
+from stable_sgd.cifar100 import cifar100
 
 
 
@@ -175,6 +176,11 @@ def get_split_cifar100_tasks(num_tasks, batch_size,run,paradigm,dataset):
 			train_loader, test_loader = dataset_ilab(task_id,batch_size,run,paradigm,dataset) #get_split_cifar100(task_id, batch_size, cifar_train, cifar_test)
 			datasets[task_id] = {'train': train_loader, 'test': test_loader}
 	
+	if dataset == 'cifar100':
+		for task_id in range(0, num_tasks):
+			train_loader, test_loader = dataset_cifar100(task_id,batch_size,run,paradigm,dataset) #get_split_cifar100(task_id, batch_size, cifar_train, cifar_test)
+			datasets[task_id] = {'train': train_loader, 'test': test_loader}
+	
 
 
 	return datasets
@@ -277,6 +283,41 @@ def dataset_toybox(task_id, batch_size,run,paradigm,dataset_name):
 			test_accs = []
 
 			dataset = toybox( paradigm, run)
+			print(f"Incremental num : {task_id}")
+			train, val, test = dataset.getNextClasses(task_id)
+			print(len(train), len(val), len(test))
+			train_x, train_y = zip(*train)
+			val_x, val_y = zip(*val)
+			test_x, test_y = zip(*test)
+				
+
+			#if inc_i > 0 :
+			#    epoches = 1 #stream learning; see data only once
+
+			train_data = DataLoader(BatchData(train_x, train_y,dataset_name, input_transform),
+						batch_size=batch_size, shuffle=True, drop_last=True)
+			#val_data = DataLoader(BatchData(val_x, val_y,dataset, input_transform_eval),
+						#batch_size=batch_size, shuffle=False)            
+			test_data = DataLoader(BatchData(test_x, test_y,dataset_name, input_transform_eval),
+						batch_size=batch_size, shuffle=False)
+			
+
+			return train_data, test_data
+
+def dataset_cifar100(task_id, batch_size,run,paradigm,dataset_name):
+			input_transform= Compose([
+									transforms.Resize(32),
+									transforms.RandomHorizontalFlip(),
+									transforms.RandomCrop(32,padding=4),
+									ToTensor(),
+									Normalize([0.5071,0.4866,0.4409],[0.2673,0.2564,0.2762])])
+			input_transform_eval= Compose([
+									transforms.Resize(32),
+									ToTensor(),
+									Normalize([0.5071,0.4866,0.4409],[0.2673,0.2564,0.2762])])
+			test_accs = []
+			#print("fine here in dataset_cifar100")
+			dataset = cifar100( paradigm, run)
 			print(f"Incremental num : {task_id}")
 			train, val, test = dataset.getNextClasses(task_id)
 			print(len(train), len(val), len(test))
