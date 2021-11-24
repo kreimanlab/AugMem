@@ -23,6 +23,9 @@ class BatchData(Dataset):
 
         if dataset1 == 'ilab':
             self.dataroot = '/media/data/Datasets/ilab2M/iLab-2M-Light/train_img_distributed'
+        
+        if dataset1 == 'cifar100':
+            self.dataroot = '/home/rushikesh/P1_Oct/cifar100/cifar100png'
 
 
     def __getitem__(self, index):

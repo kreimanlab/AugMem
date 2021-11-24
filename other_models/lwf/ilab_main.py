@@ -12,6 +12,8 @@ epochs=10
 paradigm = 'class_instance'
 dataset = 'ilab'
 tasks = 7
+results = []
+
 
 
 
@@ -26,8 +28,12 @@ for run in range(10):
 
         model.beforeTrain(i+1,run)
         accuracy=model.train(i+1)
+        results.append(accuracy)
         model.afterTrain(accuracy)
         epochs=1
+
+df = pd.DataFrame(results)
+df.to_csv("15Nov_lwf_ilab_avg_results.csv", sep='\t',index=False)
 
 
 '''

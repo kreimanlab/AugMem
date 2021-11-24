@@ -1,7 +1,7 @@
 class ilab():
 	def __init__(self, paradigm, run):
 		self.batch_num = 7
-		self.rootdir = '/home/rushikesh/code/dataloaders/ilab2mlight_task_filelists/'
+		self.rootdir = '/home/rushikesh/P1_Oct/ilab2mlight_task_filelists/'
 		
 		self.train_data = []
 		self.train_labels = []

@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from data_utils import get_permuted_mnist_tasks, get_rotated_mnist_tasks, get_split_cifar100_tasks
 
 
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def get_one_hot(target,num_class):
     one_hot=torch.zeros(target.shape[0],num_class).to(device)
@@ -123,13 +123,13 @@ class LwFmodel:
                 loss.backward()
                 opt.step()
                 print('epoch:%d,step:%d,loss:%.3f' % (epoch, step, loss.item()))
-            accuracy = self._test(self.test_loader,i,self.datasets)
+            accuracy,first_task_acc = self._test(self.test_loader,i,self.datasets)
             print('epoch:%d,accuracy:%.5f' % (epoch, accuracy))
         return accuracy
 
     def _test(self, testloader,j,datasets):
         self.model.eval()
-        correct, total = 0.0, 0.0
+        correct, total,task1_total = 0.0, 0.0,0.0
         
         task1acc = 0
         for i in range(j):
@@ -150,15 +150,17 @@ class LwFmodel:
             #print(correct, total)
             if i == 0:
                 task1acc += correct.item()
+                task1_total += total
 
                 #print("Accuracy for task 1 is")
                 #print( correct.item() / total )
         print("Testing:")
         print("Accuracy for task 1 is")
-        print( task1acc / total )
+        print( task1acc / task1_total )
+        first_task_acc = task1acc / task1_total
         accuracy = correct.item() / total
         self.model.train()
-        return accuracy
+        return accuracy,first_task_acc
 
 
     def _compute_loss(self, imgs, target):
