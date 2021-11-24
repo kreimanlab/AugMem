@@ -27,7 +27,7 @@ from torchvision.datasets.folder import pil_loader
 parser = argparse.ArgumentParser(description='Continuum learning')
 
 # experiment parameters
-parser.add_argument('exp_name', default=None, type=str, help='id for the experiment.')
+parser.add_argument('--exp_name', default="imagenet_exp_01", type=str, help='id for the experiment.')
 parser.add_argument('--cuda', type=str, default='yes', help='Use GPU?')
 parser.add_argument('--iid', type=str, default='no', help='Make all tasks into 1 iid distr.')
 parser.add_argument('--log_every', type=int, default=100, help='frequency of logs, in minibatches')
@@ -134,8 +134,8 @@ parser.add_argument('--run', type=int, default=0,
                     help='run no')
 parser.add_argument('--paradigm', type=str, default='class_iid',
                     help='class_iid or class_instance')
-parser.add_argument('--dataset', type=str, default='class_iid',
-                    help='class_iid or class_instance')
+parser.add_argument('--dataset', type=str, default='cifar100',
+                    help='core50,ilab,toybox')
 
 
 # continuum iterator #########################################################
@@ -292,7 +292,7 @@ def _eval_tasks(model, tasks, current_task, args):
     total_avg_acc = total_pred / total_size
 
     print("EVAL (train TASK {}/test total) ===> {}".format(current_task, total_result_seq))
-    torch.save((model.state_dict(), task_result_seq, task_avg_acc), model.fname + '.pt')
+    #torch.save((model.state_dict(), task_result_seq, task_avg_acc), model.fname + '.pt')
 
     return total_result_seq, total_avg_acc, task_result_seq, task_avg_acc
 
@@ -523,7 +523,7 @@ def main(overwrite_args=None):
         print(model.fname + ': ' + one_liner + ' # ' + str(spent_time))
 
         # save all results in binary file
-        torch.save((*res.get_all(), model.state_dict(), stats, one_liner, args), model.fname + '.pt')
+        #torch.save((*res.get_all(), model.state_dict(), stats, one_liner, args), model.fname + '.pt')
         stat_files.append(model.fname + '.pt')
 
     mean, std = stat_summarize(stat_files)
